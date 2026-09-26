@@ -3,9 +3,9 @@ project(RaccoonDB)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(raccoondb
-    src/main.cpp
-    src/cli/CLI.cpp
+    program/main.cpp
+    program/command_line/CommandLine.cpp
 )
 target_include_directories(raccoondb PRIVATE
-    src
+    program
 )
