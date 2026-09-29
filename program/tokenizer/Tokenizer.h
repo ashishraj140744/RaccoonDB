@@ -13,7 +13,7 @@ enum class TokenType{
 };
 struct Token{
     TokenType type;
-    std::string value;
+    string value;
 };
 class Tokenizer{
 public:
