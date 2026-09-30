@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(raccoondb
     program/main.cpp
     program/command_line/CommandLine.cpp
+    program/tokenizer/Tokenizer.cpp
 )
 target_include_directories(raccoondb PRIVATE
     program
