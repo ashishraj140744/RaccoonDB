@@ -3,6 +3,7 @@
 #include <cctype>
 #include <vector>
 #include "Tokenizer.h"
+#include "Parser.h"
 using namespace std;
 int main(){
     cout << "           RaccoonDB 1.0" << endl;
@@ -32,6 +33,13 @@ int main(){
             cout << "[" << tokens[i] << "] ";
         }
         cout << endl;
+        string errorMessage;
+        if(parseSelect(tokens, errorMessage)){
+            cout << errorMessage << endl;
+        }
+        else{
+            cout << "Parser error: " << errorMessage << endl;
+        }
     }
     return 0;
 }
