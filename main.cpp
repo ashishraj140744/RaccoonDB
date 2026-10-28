@@ -28,7 +28,7 @@ int main(){
         }
         vector<string> tokens = tokenize(command);
         cout << "Tokens: ";
-        for (size_t i = 0; i < tokens.size(); i++) {
+        for(int i = 0; i < tokens.size(); i++){
             cout << "[" << tokens[i] << "] ";
         }
         cout << endl;

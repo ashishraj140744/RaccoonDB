@@ -4,9 +4,10 @@ vector<string> tokenize(string command){
     vector<string> tokens;
     string current = "";
     bool insideString = false;
-    for (size_t i = 0; i < command.length(); i++) {
+    for(int i = 0; i<command.length(); i++){
         char c = command[i];
-        if(c == '\'') {
+        if(c == '\'' || c == '"'){
+            char quote = c;
             if(!insideString && current != ""){
                 tokens.push_back(current);
                 current = "";
@@ -27,14 +28,13 @@ vector<string> tokenize(string command){
             continue;
         }
         if(c == ' ' || c == '\t'){
-            if (current != "") {
+            if(current != ""){
                 tokens.push_back(current);
                 current = "";
             }
             continue;
         }
-        if (c == ',' || c == ';' || c == '(' ||
-            c == ')' || c == '*') {
+        if(c == ',' || c == ';' || c == '(' || c == ')' || c == '*'){
             if (current != "") {
                 tokens.push_back(current);
                 current = "";
@@ -43,15 +43,15 @@ vector<string> tokenize(string command){
             continue;
         }
         if(c == '=' || c == '<' || c == '>' || c == '!'){
-            if (current != "") {
+            if(current != ""){
                 tokens.push_back(current);
                 current = "";
             }
             string op = "";
             op += c;
-            if (i + 1 < command.length()) {
+            if(i + 1 < command.length()){
                 char next = command[i + 1];
-                if (next == '=' || (c == '<' && next == '>')) {
+                if(next == '=' || (c == '<' && next == '>')){
                     op += next;
                     i++;
                 }
