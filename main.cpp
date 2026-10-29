@@ -33,9 +33,13 @@ int main(){
             cout << "[" << tokens[i] << "] ";
         }
         cout << endl;
+        string selectedColumn;
+        string tableName;
         string errorMessage;
-        if(parseSelect(tokens, errorMessage)){
+        if(parseSelect(tokens, selectedColumn, tableName, errorMessage)){
             cout << errorMessage << endl;
+            cout << "Selected column: " << selectedColumn << endl;
+            cout << "Table name: " << tableName << endl;
         }
         else{
             cout << "Parser error: " << errorMessage << endl;
