@@ -33,12 +33,19 @@ int main(){
             cout << "[" << tokens[i] << "] ";
         }
         cout << endl;
-        string selectedColumn;
+        vector<string> selectedColumns;
         string tableName;
         string errorMessage;
-        if(parseSelect(tokens, selectedColumn, tableName, errorMessage)){
+        if(parseSelect(tokens, selectedColumns, tableName, errorMessage)){
             cout << errorMessage << endl;
-            cout << "Selected column: " << selectedColumn << endl;
+            cout << "Selected column: ";
+            for(int i = 0; i < selectedColumns.size(); i++) {
+                cout << selectedColumns[i];
+                if(i < selectedColumns.size() - 1){
+                    cout << ", ";
+                }
+            }
+            cout << endl;
             cout << "Table name: " << tableName << endl;
         }
         else{

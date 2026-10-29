@@ -7,7 +7,7 @@ string toUpperCase(string word){
     }
     return word;
 }
-bool parseSelect(const vector<string>& tokens, string& selectedColumn, string& tableName, string& errorMessage){
+bool parseSelect(const vector<string>& tokens, vector<string>& selectedColumns, string& tableName, string& errorMessage){
     if(tokens.empty()){
         errorMessage = "Empty command.";
         return false;
@@ -16,32 +16,60 @@ bool parseSelect(const vector<string>& tokens, string& selectedColumn, string& t
         errorMessage = "Command must start with SELECT.";
         return false;
     }
-    if(tokens.size() < 4){
-        errorMessage = "Incomplete SELECT command.";
-        return false;
-    }
-    if(tokens[1] == "FROM" || tokens[1] == ";" || tokens[1] == ",") {
+    selectedColumns.clear();
+    tableName.clear();
+    int i = 1;
+    if(i >= tokens.size() || tokens[i] == "FROM" || tokens[i] == "," || tokens[i] == ";"){
         errorMessage = "Expected a column name or * after SELECT.";
         return false;
     }
-    if(toUpperCase(tokens[2]) != "FROM"){
-        errorMessage = "Expected FROM after the column name.";
+    if(tokens[i] == "*"){
+        selectedColumns.push_back("*");
+        i++;
+        if(i >= tokens.size() || toUpperCase(tokens[i]) != "FROM"){
+            errorMessage = "Expected FROM after *.";
+            return false;
+        }
+    }
+    else{
+        while(i < tokens.size() && toUpperCase(tokens[i]) != "FROM"){
+            if(tokens[i] == "," || tokens[i] == ";" || tokens[i] == "*"){
+                errorMessage = "Expected a column name.";
+                return false;
+            }
+            selectedColumns.push_back(tokens[i]);
+            i++;
+            if(i < tokens.size() && tokens[i] == ","){
+                i++;
+                if(i >= tokens.size() || tokens[i] == "," || tokens[i] == ";" || tokens[i] == "*" || toUpperCase(tokens[i]) == "FROM"){
+                    errorMessage = "Expected a column name after comma.";
+                    return false;
+                }
+            }
+            else if(i < tokens.size() && toUpperCase(tokens[i]) != "FROM"){
+                errorMessage = "Expected a comma or FROM after column name.";
+                return false;
+            }
+        }
+    }
+    if(i >= tokens.size() || toUpperCase(tokens[i]) != "FROM"){
+        errorMessage = "Expected FROM after the column list.";
         return false;
     }
-    if(tokens[3] == ";" || tokens[3] == "," || tokens[3] == "*"){
+    i++;
+    if(i >= tokens.size() || tokens[i] == ";" || tokens[i] == "," || tokens[i] == "*"){
         errorMessage = "Expected a table name after FROM.";
         return false;
     }
-    if(tokens.size() == 5 && tokens[4] != ";"){
-        errorMessage = "Unexpected token after the table name.";
+    tableName = tokens[i];
+    i++;
+    if(i < tokens.size() && tokens[i] == ";"){
+        i++;
+    }
+    if(i != tokens.size()){
+        errorMessage = "Unexpected extra tokens after table name.";
         return false;
     }
-    if(tokens.size() > 5){
-        errorMessage = "Unexpected extra tokens in SELECT command.";
-        return false;
-    }
-    selectedColumn = tokens[1];
-    tableName = tokens[3];
     errorMessage = "SELECT command structure is valid.";
     return true;
 }
