@@ -3,5 +3,5 @@
 #include <string>
 #include <vector>
 using namespace std;
-bool parseSelect(const vector<string>& tokens, string& errorMessage);
+bool parseSelect(const vector<string>& tokens, string& selectedColumn, string& tableName, string& errorMessage);
 #endif

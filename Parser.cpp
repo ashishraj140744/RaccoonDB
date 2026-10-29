@@ -7,7 +7,7 @@ string toUpperCase(string word){
     }
     return word;
 }
-bool parseSelect(const vector<string>& tokens, string& errorMessage){
+bool parseSelect(const vector<string>& tokens, string& selectedColumn, string& tableName, string& errorMessage){
     if(tokens.empty()){
         errorMessage = "Empty command.";
         return false;
@@ -40,6 +40,8 @@ bool parseSelect(const vector<string>& tokens, string& errorMessage){
         errorMessage = "Unexpected extra tokens in SELECT command.";
         return false;
     }
+    selectedColumn = tokens[1];
+    tableName = tokens[3];
     errorMessage = "SELECT command structure is valid.";
     return true;
 }
