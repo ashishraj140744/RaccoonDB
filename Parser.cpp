@@ -111,6 +111,7 @@ bool parseSelect(
     errorMessage = "SELECT command structure is valid.";
     return true;
 }
+
 bool parseCreateTable(
     const vector<string>& tokens,
     string& tableName,
@@ -134,13 +135,13 @@ bool parseCreateTable(
         return false;
     }
     int i = 2;
-    if (i >= tokens.size() || tokens[i] == "(" || tokens[i] == ")" || tokens[i] == "," || tokens[i] == ";"){
+    if(i >= tokens.size() || tokens[i] == "(" || tokens[i] == ")" || tokens[i] == "," || tokens[i] == ";"){
         errorMessage = "Expected a table name.";
         return false;
     }
     tableName = tokens[i];
     i++;
-    if (i >= tokens.size() || tokens[i] != "(") {
+    if(i >= tokens.size() || tokens[i] != "("){
         errorMessage = "Expected '(' after table name.";
         return false;
     }
@@ -152,13 +153,45 @@ bool parseCreateTable(
         }
         string columnName = tokens[i];
         i++;
-        if(i >= tokens.size() || tokens[i] == "," || tokens[i] == ")" || tokens[i] == ";"){
+        if (i >= tokens.size()) {
             errorMessage = "Expected a column type.";
             return false;
         }
         string columnType = toUpperCase(tokens[i]);
         i++;
-        if(columnType != "INT" && columnType != "TEXT"){
+        if(columnType == "INT" || columnType == "TEXT"){
+        }
+        else if(columnType == "VARCHAR"){
+            if(i >= tokens.size() || tokens[i] != "("){
+                errorMessage = "Expected '(' after VARCHAR.";
+                return false;
+            }
+            i++;
+            if(i >= tokens.size() || tokens[i] == ")"){
+                errorMessage = "Expected VARCHAR length.";
+                return false;
+            }
+            string length = tokens[i];
+            bool validLength = !length.empty();
+            for(int j = 0; j < length.length(); j++){
+                if(!isdigit(static_cast<unsigned char>(length[j]))){
+                    validLength = false;
+                    break;
+                }
+            }
+            if(!validLength || length == "0"){
+                errorMessage = "VARCHAR length must be a positive integer.";
+                return false;
+            }
+            i++;
+            if(i >= tokens.size() || tokens[i] != ")"){
+                errorMessage = "Expected ')' after VARCHAR length.";
+                return false;
+            }
+            i++;
+            columnType = "VARCHAR(" + length + ")";
+        }
+        else{
             errorMessage = "Unsupported column type: " + columnType;
             return false;
         }

@@ -1,13 +1,13 @@
 #include "Tokenizer.h"
+#include <cctype>
 using namespace std;
 vector<string> tokenize(string command){
     vector<string> tokens;
     string current = "";
     bool insideString = false;
-    for(int i = 0; i<command.length(); i++){
+    for(int i = 0; i < command.length(); i++){
         char c = command[i];
         if(c == '\'' || c == '"'){
-            char quote = c;
             if(!insideString && current != ""){
                 tokens.push_back(current);
                 current = "";
@@ -27,15 +27,15 @@ vector<string> tokenize(string command){
             current += c;
             continue;
         }
-        if(c == ' ' || c == '\t'){
+        if(isspace(static_cast<unsigned char>(c))){
             if(current != ""){
                 tokens.push_back(current);
                 current = "";
             }
             continue;
         }
-        if(c == ',' || c == ';' || c == '(' || c == ')' || c == '*'){
-            if (current != "") {
+        if(c == ',' || c == ';' || c == '(' ||  c == ')' || c == '*'){
+            if(current != ""){
                 tokens.push_back(current);
                 current = "";
             }

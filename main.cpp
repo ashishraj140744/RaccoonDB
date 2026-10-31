@@ -6,6 +6,36 @@
 #include "Parser.h"
 #include "Database.h"
 using namespace std;
+bool hasStatementEnd(string command){
+    char quote = '\0';
+    for(int i = 0; i < command.length(); i++){
+        char c = command[i];
+        if(quote == '\0' && (c == '\'' || c == '"')){
+            quote = c;
+        }
+        else if(quote == c){
+            quote = '\0';
+        }
+        if(c == ';' && quote == '\0'){
+            return true;
+        }
+    }
+    return false;
+}
+bool isExitCommand(string command) {
+    string upperCommand = "";
+    for(int i = 0; i < command.length(); i++){
+        if(!isspace(static_cast<unsigned char>(command[i]))){
+            upperCommand += toupper(
+                static_cast<unsigned char>(command[i])
+            );
+        }
+    }
+    return upperCommand == "EXIT" ||
+           upperCommand == "EXIT;" ||
+           upperCommand == "QUIT" ||
+           upperCommand == "QUIT;";
+}
 int main(){
     cout << "           RaccoonDB 1.0" << endl;
     cout << "        Database Engine in C++" << endl;
@@ -14,28 +44,39 @@ int main(){
     Database db;
     createSampleDatabase(db);
     string command;
-    while(true){
-        cout << "raccoon> ";
-        if(!getline(cin, command)){
-            break;
-        }
-        if(command.empty()){
-            continue;
-        }
-        string upperCommand = command;
-        for(int i = 0; i < upperCommand.length(); i++){
-            upperCommand[i] = toupper(upperCommand[i]);
-        }
-        if(upperCommand == "EXIT" || upperCommand == "EXIT;" || upperCommand == "QUIT" || upperCommand == "QUIT;"){
-            cout << "Goodbye!" << endl;
-            break;
+    string line;
+    while (true) {
+        command = "";
+        while(true){
+            if(command.empty()){
+                cout << "raccoon> ";
+            }
+            else{
+                cout << "       -> ";
+            }
+            if(!getline(cin, line)){
+                if(!command.empty()){
+                    cout << "\nError: Incomplete command. Missing ';'."<< endl;
+                }
+                return 0;
+            }
+            if(line.empty() && command.empty()){
+                continue;
+            }
+            if(command.empty() && isExitCommand(line)){
+                cout << "Goodbye!" << endl;
+                return 0;
+            }
+            command += line + "\n";
+            if(hasStatementEnd(command)){
+                break;
+            }
         }
         vector<string> tokens = tokenize(command);
         if(tokens.empty()){
             continue;
         }
         string commandType = tokens[0];
-        cout << "Tokens: ";
         for (int i = 0; i < commandType.length(); i++) {
             commandType[i] = toupper(commandType[i]);
         }
