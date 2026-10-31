@@ -13,4 +13,11 @@ bool parseSelect(
     string& conditionValue, 
     string& errorMessage
 );
+bool parseCreateTable(
+    const vector<string>& tokens,
+    string& tableName,
+    vector<string>& columnNames,
+    vector<string>& columnTypes,
+    string& errorMessage
+);
 #endif
