@@ -14,7 +14,7 @@ bool parseSelect(
     string& errorMessage
 );
 bool parseCreateTable(
-    const vector<string>& tokens,
+    const vector<string>& tokens, 
     string& tableName,
     vector<string>& columnNames,
     vector<string>& columnTypes,

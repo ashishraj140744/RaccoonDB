@@ -26,4 +26,11 @@ public:
 void createSampleDatabase(Database& db);
 Table* findTable(Database& db, string tableName);
 void executeSelect(Table& table, vector<string> selectedColumns);
+bool createTable(
+    Database& db,
+    string tableName,
+    const vector<string>& columnNames,
+    const vector<string>& columnTypes,
+    string& errorMessage
+);
 #endif

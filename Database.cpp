@@ -73,3 +73,30 @@ void executeSelect(Table& table, vector<string> selectedColumns){
         cout << endl;
     }
 }
+bool createTable(
+    Database& db,
+    string tableName,
+    const vector<string>& columnNames,
+    const vector<string>& columnTypes,
+    string& errorMessage
+){
+    if(findTable(db, tableName) != nullptr){
+        errorMessage = "Table '" + tableName + "' already exists.";
+        return false;
+    }
+    if(columnNames.empty() || columnNames.size() != columnTypes.size()){
+        errorMessage = "Invalid table definition.";
+        return false;
+    }
+    Table newTable;
+    newTable.name = tableName;
+    for(int i = 0; i < columnNames.size(); i++){
+        Column col;
+        col.name = columnNames[i];
+        col.type = columnTypes[i];
+        newTable.columns.push_back(col);
+    }
+    db.tables.push_back(newTable);
+    errorMessage = "Table '" + tableName + "' created successfully.";
+    return true;
+}

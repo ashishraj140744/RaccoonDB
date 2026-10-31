@@ -111,3 +111,92 @@ bool parseSelect(
     errorMessage = "SELECT command structure is valid.";
     return true;
 }
+bool parseCreateTable(
+    const vector<string>& tokens,
+    string& tableName,
+    vector<string>& columnNames,
+    vector<string>& columnTypes,
+    string& errorMessage
+){
+    tableName.clear();
+    columnNames.clear();
+    columnTypes.clear();
+    if(tokens.empty()){
+        errorMessage = "Empty command.";
+        return false;
+    }
+    if(toUpperCase(tokens[0]) != "CREATE"){
+        errorMessage = "Command must start with CREATE.";
+        return false;
+    }
+    if(tokens.size() < 2 || toUpperCase(tokens[1]) != "TABLE"){
+        errorMessage = "Expected TABLE after CREATE.";
+        return false;
+    }
+    int i = 2;
+    if (i >= tokens.size() || tokens[i] == "(" || tokens[i] == ")" || tokens[i] == "," || tokens[i] == ";"){
+        errorMessage = "Expected a table name.";
+        return false;
+    }
+    tableName = tokens[i];
+    i++;
+    if (i >= tokens.size() || tokens[i] != "(") {
+        errorMessage = "Expected '(' after table name.";
+        return false;
+    }
+    i++;
+    while(i < tokens.size()){
+        if(tokens[i] == "," || tokens[i] == ")" || tokens[i] == ";"){
+            errorMessage = "Expected a column name.";
+            return false;
+        }
+        string columnName = tokens[i];
+        i++;
+        if(i >= tokens.size() || tokens[i] == "," || tokens[i] == ")" || tokens[i] == ";"){
+            errorMessage = "Expected a column type.";
+            return false;
+        }
+        string columnType = toUpperCase(tokens[i]);
+        i++;
+        if(columnType != "INT" && columnType != "TEXT"){
+            errorMessage = "Unsupported column type: " + columnType;
+            return false;
+        }
+        for(int j = 0; j < columnNames.size(); j++){
+            if(toUpperCase(columnNames[j]) == toUpperCase(columnName)){
+                errorMessage = "Duplicate column name: " + columnName;
+                return false;
+            }
+        }
+        columnNames.push_back(columnName);
+        columnTypes.push_back(columnType);
+        if(i < tokens.size() && tokens[i] == ","){
+            i++;
+            if(i >= tokens.size() || tokens[i] == ")"){
+                errorMessage = "Expected a column after comma.";
+                return false;
+            }
+        }
+        else if(i < tokens.size() && tokens[i] == ")"){
+            break;
+        }
+        else{
+            errorMessage = "Expected ',' or ')' after column definition.";
+            return false;
+        }
+    }
+    if(i >= tokens.size() || tokens[i] != ")"){
+        errorMessage = "Expected ')' after column definitions.";
+        return false;
+    }
+    i++;
+    if(i < tokens.size() && tokens[i] == ";"){
+        i++;
+    }
+    if(i != tokens.size()){
+        errorMessage = "Unexpected extra tokens after CREATE TABLE.";
+        return false;
+    }
+    errorMessage = "CREATE TABLE structure is valid.";
+    return true;
+}
