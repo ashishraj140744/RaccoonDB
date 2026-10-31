@@ -10,7 +10,6 @@ string toUpperCase(string word){
 bool isComparisonOperator(string op){
     return op == "=" || op == "!=" || op == "<>" || op == ">" || op == "<" || op == ">=" || op == "<=";
 }
-
 bool parseSelect(
     const vector<string>& tokens, 
     vector<string>& selectedColumns, 

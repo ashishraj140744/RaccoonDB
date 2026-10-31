@@ -52,7 +52,7 @@ int main(){
         )){
             cout << errorMessage << endl;
             cout << "Selected column: ";
-            for(int i = 0; i < selectedColumns.size(); i++) {
+            for(int i = 0; i < selectedColumns.size(); i++){
                 cout << selectedColumns[i];
                 if(i < selectedColumns.size() - 1){
                     cout << ", ";

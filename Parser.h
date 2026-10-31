@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 using namespace std;
-bool parseSelect(
+bool parseSelect( 
     const vector<string>& tokens, 
     vector<string>& selectedColumns, 
     string& tableName, 
