@@ -4,12 +4,15 @@
 #include <vector>
 #include "Tokenizer.h"
 #include "Parser.h"
+#include "Database.h"
 using namespace std;
 int main(){
     cout << "           RaccoonDB 1.0" << endl;
     cout << "        Database Engine in C++" << endl;
     cout << "Type HELP; to see supported commands." << endl;
     cout << endl;
+    Database db;
+    createSampleDatabase(db);
     string command;
     while(true){
         cout << "raccoon> ";
@@ -40,7 +43,7 @@ int main(){
         string conditionOperator;
         string conditionValue;
         string errorMessage;
-        if(parseSelect(
+        if(!parseSelect(
             tokens, 
             selectedColumns, 
             tableName, 
@@ -50,25 +53,27 @@ int main(){
             conditionValue, 
             errorMessage
         )){
-            cout << errorMessage << endl;
-            cout << "Selected column: ";
-            for(int i = 0; i < selectedColumns.size(); i++){
-                cout << selectedColumns[i];
-                if(i < selectedColumns.size() - 1){
-                    cout << ", ";
-                }
-            }
-            cout << endl;
-            cout << "Table name: " << tableName << endl;
-            if(hasWhere){
-                cout << "WHERE column: " << conditionColumn << endl;
-                cout << "WHERE operator: " << conditionOperator << endl;
-                cout << "WHERE value: " << conditionValue << endl;
-            }
-        }
-        else{
             cout << "Parser error: " << errorMessage << endl;
+            continue;
         }
+        if(hasWhere){
+            cout << "WHERE filtering is not implemented yet." << endl;
+            continue;
+        }
+        Table* table = findTable(db, tableName);
+        if(table == nullptr){
+            cout << "Error: Table '" << tableName << "' does not exist." << endl;
+            continue;
+        }
+        if(selectedColumns.size() == 1 && selectedColumns[0] == "*"){
+            selectedColumns.clear();
+            for(int i = 0; i < table->columns.size(); i++){
+                selectedColumns.push_back(
+                    table->columns[i].name
+                );
+            }
+        }
+        executeSelect(*table, selectedColumns);
     }
     return 0;
 }

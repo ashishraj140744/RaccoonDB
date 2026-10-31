@@ -23,4 +23,7 @@ class Database{
 public:
     vector<Table> tables;
 };
+void createSampleDatabase(Database& db);
+Table* findTable(Database& db, string tableName);
+void executeSelect(Table& table, vector<string> selectedColumns);
 #endif

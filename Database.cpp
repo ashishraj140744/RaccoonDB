@@ -19,7 +19,7 @@ void createSampleDatabase(Database& db){
     students.columns.push_back(col3);
     students.columns.push_back(col4);
     Row row1;
-    row1.values = {"1", "Ashish", "21", "Shimla"};
+    row1.values = {"1", "Ashish", "19", "Shimla"};
     Row row2;
     row2.values = {"2", "Rahul", "22", "Delhi"};
     Row row3;
