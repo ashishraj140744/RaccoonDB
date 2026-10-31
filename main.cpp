@@ -35,8 +35,21 @@ int main(){
         cout << endl;
         vector<string> selectedColumns;
         string tableName;
+        bool hasWhere = false;
+        string conditionColumn;
+        string conditionOperator;
+        string conditionValue;
         string errorMessage;
-        if(parseSelect(tokens, selectedColumns, tableName, errorMessage)){
+        if(parseSelect(
+            tokens, 
+            selectedColumns, 
+            tableName, 
+            hasWhere,
+            conditionColumn,
+            conditionOperator,
+            conditionValue, 
+            errorMessage
+        )){
             cout << errorMessage << endl;
             cout << "Selected column: ";
             for(int i = 0; i < selectedColumns.size(); i++) {
@@ -47,6 +60,11 @@ int main(){
             }
             cout << endl;
             cout << "Table name: " << tableName << endl;
+            if(hasWhere){
+                cout << "WHERE column: " << conditionColumn << endl;
+                cout << "WHERE operator: " << conditionOperator << endl;
+                cout << "WHERE value: " << conditionValue << endl;
+            }
         }
         else{
             cout << "Parser error: " << errorMessage << endl;

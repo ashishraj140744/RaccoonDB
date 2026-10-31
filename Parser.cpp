@@ -7,7 +7,20 @@ string toUpperCase(string word){
     }
     return word;
 }
-bool parseSelect(const vector<string>& tokens, vector<string>& selectedColumns, string& tableName, string& errorMessage){
+bool isComparisonOperator(string op){
+    return op == "=" || op == "!=" || op == "<>" || op == ">" || op == "<" || op == ">=" || op == "<=";
+}
+
+bool parseSelect(
+    const vector<string>& tokens, 
+    vector<string>& selectedColumns, 
+    string& tableName, 
+    bool& hasWhere,
+    string& conditionColumn,
+    string& conditionOperator,
+    string& conditionValue,
+    string& errorMessage
+){
     if(tokens.empty()){
         errorMessage = "Empty command.";
         return false;
@@ -18,6 +31,10 @@ bool parseSelect(const vector<string>& tokens, vector<string>& selectedColumns, 
     }
     selectedColumns.clear();
     tableName.clear();
+    hasWhere = false;
+    conditionColumn.clear();
+    conditionOperator.clear();
+    conditionValue.clear();
     int i = 1;
     if(i >= tokens.size() || tokens[i] == "FROM" || tokens[i] == "," || tokens[i] == ";"){
         errorMessage = "Expected a column name or * after SELECT.";
@@ -63,6 +80,28 @@ bool parseSelect(const vector<string>& tokens, vector<string>& selectedColumns, 
     }
     tableName = tokens[i];
     i++;
+    if(i < tokens.size() && toUpperCase(tokens[i]) == "WHERE"){
+        hasWhere = true;
+        i++;
+        if(i >= tokens.size() || tokens[i] == ";" || tokens[i] == "," || isComparisonOperator(tokens[i])){
+            errorMessage = "Expected a column name after WHERE.";
+            return false;
+        }
+        conditionColumn = tokens[i];
+        i++;
+        if(i >= tokens.size() || !isComparisonOperator(tokens[i])){
+            errorMessage = "Expected a valid comparison operator after the WHERE column.";
+            return false;
+        }
+        conditionOperator = tokens[i];
+        i++;
+        if(i >= tokens.size() || tokens[i] == ";" || tokens[i] == "," || isComparisonOperator(tokens[i])){
+            errorMessage = "Expected a value after the WHERE operator.";
+            return false;
+        }
+        conditionValue = tokens[i];
+        i++;
+    }
     if(i < tokens.size() && tokens[i] == ";"){
         i++;
     }
