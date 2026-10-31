@@ -31,49 +31,85 @@ int main(){
             break;
         }
         vector<string> tokens = tokenize(command);
+        if(tokens.empty()){
+            continue;
+        }
+        string commandType = tokens[0];
         cout << "Tokens: ";
-        for(int i = 0; i < tokens.size(); i++){
-            cout << "[" << tokens[i] << "] ";
+        for (int i = 0; i < commandType.length(); i++) {
+            commandType[i] = toupper(commandType[i]);
         }
-        cout << endl;
-        vector<string> selectedColumns;
-        string tableName;
-        bool hasWhere = false;
-        string conditionColumn;
-        string conditionOperator;
-        string conditionValue;
-        string errorMessage;
-        if(!parseSelect(
-            tokens, 
-            selectedColumns, 
-            tableName, 
-            hasWhere,
-            conditionColumn,
-            conditionOperator,
-            conditionValue, 
-            errorMessage
-        )){
-            cout << "Parser error: " << errorMessage << endl;
-            continue;
-        }
-        if(hasWhere){
-            cout << "WHERE filtering is not implemented yet." << endl;
-            continue;
-        }
-        Table* table = findTable(db, tableName);
-        if(table == nullptr){
-            cout << "Error: Table '" << tableName << "' does not exist." << endl;
-            continue;
-        }
-        if(selectedColumns.size() == 1 && selectedColumns[0] == "*"){
-            selectedColumns.clear();
-            for(int i = 0; i < table->columns.size(); i++){
-                selectedColumns.push_back(
-                    table->columns[i].name
-                );
+        if(commandType == "CREATE"){
+            string tableName;
+            vector<string> columnNames;
+            vector<string> columnTypes;
+            string errorMessage;
+            if(!parseCreateTable(
+                tokens,
+                tableName,
+                columnNames,
+                columnTypes,
+                errorMessage
+            )){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
             }
+            if(createTable(
+                db,
+                tableName,
+                columnNames,
+                columnTypes,
+                errorMessage
+            )){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
         }
-        executeSelect(*table, selectedColumns);
+        if(commandType == "SELECT"){
+            vector<string> selectedColumns;
+            string tableName;
+            bool hasWhere = false;
+            string conditionColumn;
+            string conditionOperator;
+            string conditionValue;
+            string errorMessage;
+            if(!parseSelect(
+                tokens, 
+                selectedColumns, 
+                tableName, 
+                hasWhere,
+                conditionColumn,
+                conditionOperator,
+                conditionValue, 
+                errorMessage
+            )){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(hasWhere){
+                cout << "WHERE filtering is not implemented yet." << endl;
+                continue;
+            }
+            Table* table = findTable(db, tableName);
+            if(table == nullptr){
+                cout << "Error: Table '" << tableName << "' does not exist." << endl;
+                continue;
+            }
+            if(selectedColumns.size() == 1 && selectedColumns[0] == "*"){
+                selectedColumns.clear();
+                for(int i = 0; i < table->columns.size(); i++){
+                    selectedColumns.push_back(
+                        table->columns[i].name
+                    );
+                }
+            }
+            executeSelect(*table, selectedColumns);
+            continue;
+        }
+        cout << "Error: Unsupported command." << endl;
     }
     return 0;
 }
