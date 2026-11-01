@@ -20,4 +20,10 @@ bool parseCreateTable(
     vector<string>& columnTypes,
     string& errorMessage
 );
+bool parseInsert(
+    const vector<string>& tokens,
+    string& tableName,
+    vector<string>& values,
+    string& errorMessage
+);
 #endif
