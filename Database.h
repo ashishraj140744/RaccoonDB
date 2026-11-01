@@ -33,4 +33,11 @@ bool createTable(
     const vector<string>& columnTypes,
     string& errorMessage
 );
+bool executeInsert(
+    Database& db,
+    string tableName,
+    const vector<string>& columnNames,
+    const vector<string>& values,
+    string& errorMessage
+);
 #endif

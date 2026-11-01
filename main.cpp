@@ -149,6 +149,36 @@ int main(){
             }
             executeSelect(*table, selectedColumns);
             continue;
+
+        }
+        if(commandType == "INSERT"){
+            string tableName;
+            vector<string> columnNames;
+            vector<string> values;
+            string errorMessage;
+            if(!parseInsert(
+                tokens,
+                tableName,
+                columnNames,
+                values,
+                errorMessage
+            )){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(executeInsert(
+                db,
+                tableName,
+                columnNames,
+                values,
+                errorMessage
+            )){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
         }
         cout << "Error: Unsupported command." << endl;
     }

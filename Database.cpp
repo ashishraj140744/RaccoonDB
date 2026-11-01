@@ -1,4 +1,6 @@
 #include "Database.h"
+#include <cctype>
+#include <limits>
 void createSampleDatabase(Database& db){
     Table students;
     students.name = "students";
@@ -98,5 +100,177 @@ bool createTable(
     }
     db.tables.push_back(newTable);
     errorMessage = "Table '" + tableName + "' created successfully.";
+    return true;
+}
+string toUpper(string word){
+    for(int i = 0; i < word.length(); i++){
+        word[i] = toupper(static_cast<unsigned char>(word[i]));
+    }
+    return word;
+}
+bool isValidInteger(string value){
+    if(value.empty()){
+        return false;
+    }
+    int start = 0;
+    if(value[0] == '-' || value[0] == '+'){
+        start = 1;
+    }
+    if(start == value.length()){
+        return false;
+    }
+    for(int i = start; i < value.length(); i++){
+        if(!isdigit(static_cast<unsigned char>(value[i]))){
+            return false;
+        }
+    }
+    try{
+        long long number = stoll(value);
+        if(number < numeric_limits<int>::min() ||
+           number > numeric_limits<int>::max()){
+            return false;
+        }
+    }
+    catch(...){
+        return false;
+    }
+    return true;
+}
+bool isQuotedString(string value){
+    if(value.length() < 2){
+        return false;
+    }
+    char first = value[0];
+    char last = value[value.length() - 1];
+    return (first == '\'' && last == '\'') || (first == '"' && last == '"');
+}
+bool validateValue(string value, string columnType, string& errorMessage){
+    string upperType = toUpper(columnType);
+    if(upperType == "INT"){
+        if(!isValidInteger(value)){
+            errorMessage = "Expected an integer value, received '" + value + "'.";
+            return false;
+        }
+        return true;
+    }
+    if(upperType == "TEXT"){
+        if(!isQuotedString(value)){
+            errorMessage = "TEXT values must be enclosed in quotes.";
+            return false;
+        }
+        return true;
+    }
+    if(upperType.find("VARCHAR(") == 0){
+        if(!isQuotedString(value)){
+            errorMessage = "VARCHAR values must be enclosed in quotes.";
+            return false;
+        }
+        size_t openBracket = upperType.find('(');
+        size_t closeBracket = upperType.find(')');
+        if(closeBracket == string::npos || closeBracket <= openBracket + 1){
+            errorMessage = "Invalid VARCHAR definition.";
+            return false;
+        }
+        int maxLength;
+        try{
+            maxLength = stoi(
+                upperType.substr(
+                    openBracket + 1,
+                    closeBracket - openBracket - 1
+                )
+            );
+        }
+        catch(...){
+            errorMessage = "Invalid VARCHAR length.";
+            return false;
+        }
+        string actualValue = value.substr(1, value.length() - 2);
+        if(actualValue.length() > maxLength){
+            errorMessage = "Value exceeds VARCHAR(" +
+                           to_string(maxLength) + ") limit.";
+            return false;
+        }
+        return true;
+    }
+    errorMessage = "Unsupported column type: " + columnType;
+    return false;
+}
+bool executeInsert(
+    Database& db,
+    string tableName,
+    const vector<string>& columnNames,
+    const vector<string>& values,
+    string& errorMessage
+){
+    Table* table = findTable(db, tableName);
+    if(table == nullptr){
+        errorMessage = "Table '" + tableName + "' does not exist.";
+        return false;
+    }
+    if(values.empty()){
+        errorMessage = "INSERT requires values.";
+        return false;
+    }
+    if(columnNames.size() != values.size() && !columnNames.empty()){
+        errorMessage = "Number of columns and values does not match.";
+        return false;
+    }
+    if(columnNames.empty() && values.size() != table->columns.size()){
+        errorMessage = "Number of values must match the table's column count.";
+        return false;
+    }
+    vector<string> newValues(table->columns.size());
+    vector<bool> assigned(table->columns.size(), false);
+    for(int i = 0; i < values.size(); i++){
+        int columnIndex = -1;
+        if(columnNames.empty()){
+            columnIndex = i;
+        }
+        else{
+            for(int j = 0; j < table->columns.size(); j++){
+                if(toUpper(table->columns[j].name) ==
+                   toUpper(columnNames[i])){
+                    columnIndex = j;
+                    break;
+                }
+            }
+        }
+        if(columnIndex == -1){
+            errorMessage = "Column '" + columnNames[i] + "' does not exist.";
+            return false;
+        }
+        if(assigned[columnIndex]){
+            errorMessage = "Duplicate column: " +
+                           table->columns[columnIndex].name;
+            return false;
+        }
+        if(!validateValue(
+            values[i],
+            table->columns[columnIndex].type,
+            errorMessage
+        )){
+            errorMessage = "Column '" + table->columns[columnIndex].name + "': " + errorMessage;
+            return false;
+        }
+        string storedValue = values[i];
+        if(isQuotedString(storedValue)){
+            storedValue = storedValue.substr(
+                1,
+                storedValue.length() - 2
+            );
+        }
+        newValues[columnIndex] = storedValue;
+        assigned[columnIndex] = true;
+    }
+    for(int i = 0; i < assigned.size(); i++){
+        if(!assigned[i]){
+            errorMessage = "Missing value for column '" + table->columns[i].name + "'.";
+            return false;
+        }
+    }
+    Row newRow;
+    newRow.values = newValues;
+    table->rows.push_back(newRow);
+    errorMessage = "1 row inserted successfully.";
     return true;
 }
