@@ -23,6 +23,7 @@ bool parseCreateTable(
 bool parseInsert(
     const vector<string>& tokens,
     string& tableName,
+    vector<string>& columnNames,
     vector<string>& values,
     string& errorMessage
 );
