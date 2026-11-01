@@ -149,7 +149,6 @@ int main(){
             }
             executeSelect(*table, selectedColumns);
             continue;
-
         }
         if(commandType == "INSERT"){
             string tableName;
