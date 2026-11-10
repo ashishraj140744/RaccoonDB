@@ -25,7 +25,15 @@ public:
 };
 void createSampleDatabase(Database& db);
 Table* findTable(Database& db, string tableName);
-void executeSelect(Table& table, vector<string> selectedColumns);
+bool executeSelect(
+    Table& table,
+    vector<string> selectedColumns,
+    bool hasWhere,
+    string conditionColumn,
+    string conditionOperator,
+    string conditionValue,
+    string& errorMessage
+);
 bool createTable(
     Database& db,
     string tableName,
