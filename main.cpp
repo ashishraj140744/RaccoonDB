@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <editline/readline.h>
+#include <cstdlib>
 #include <cctype>
 #include <vector>
 #include "Tokenizer.h"
@@ -48,18 +50,22 @@ int main(){
     while (true) {
         command = "";
         while(true){
+            string prompt;
             if(command.empty()){
-                cout << "raccoon> ";
+                prompt = "raccoon> ";
             }
             else{
-                cout << "       -> ";
+                prompt = "       -> ";
             }
-            if(!getline(cin, line)){
+            char* inputLine = readline(prompt.c_str());
+            if(inputLine == nullptr){
                 if(!command.empty()){
-                    cout << "\nError: Incomplete command. Missing ';'."<< endl;
+                    cout << "\nError: Incomplete command. Missing ';'." << endl;
                 }
                 return 0;
             }
+            line = inputLine;
+            free(inputLine);
             if(line.empty() && command.empty()){
                 continue;
             }
@@ -130,10 +136,6 @@ int main(){
                 cout << "Parser error: " << errorMessage << endl;
                 continue;
             }
-            if(hasWhere){
-                cout << "WHERE filtering is not implemented yet." << endl;
-                continue;
-            }
             Table* table = findTable(db, tableName);
             if(table == nullptr){
                 cout << "Error: Table '" << tableName << "' does not exist." << endl;
@@ -147,8 +149,19 @@ int main(){
                     );
                 }
             }
-            executeSelect(*table, selectedColumns);
-            continue;
+            if(!executeSelect(
+                    *table,
+                    selectedColumns,
+                    hasWhere,
+                    conditionColumn,
+                    conditionOperator,
+                    conditionValue,
+                    errorMessage
+                )){
+                    cout << "Error: " << errorMessage << endl;
+                }
+
+                continue;
         }
         if(commandType == "INSERT"){
             string tableName;

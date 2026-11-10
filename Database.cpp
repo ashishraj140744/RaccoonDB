@@ -70,23 +70,17 @@ bool executeSelect(
         }
     }
     int conditionIndex = -1;
-    // Validate WHERE column
     if(hasWhere){
-
         for(int i = 0; i < table.columns.size(); i++){
-
             if(toUpper(table.columns[i].name) == toUpper(conditionColumn)){
                 conditionIndex = i;
                 break;
             }
         }
-
         if(conditionIndex == -1){
             errorMessage = "WHERE column '" + conditionColumn + "' does not exist.";
             return false;
         }
-
-        // Validate WHERE value according to column type
         if(!validateValue(
             conditionValue,
             table.columns[conditionIndex].type,
@@ -99,49 +93,27 @@ bool executeSelect(
             return false;
         }
     }
-
-    // Remove quotes from string comparison value
     string compareValue = conditionValue;
-
     if(hasWhere && isQuotedString(compareValue)){
         compareValue = compareValue.substr(1, compareValue.length() - 2);
     }
-
-    // Print headers
     for(int i = 0; i < columnIndexes.size(); i++){
-
         cout << table.columns[columnIndexes[i]].name;
-
         if(i != columnIndexes.size() - 1){
             cout << "\t";
         }
     }
-
     cout << endl;
-
     int rowsPrinted = 0;
-
-    // Check every row
     for(int i = 0; i < table.rows.size(); i++){
-
         bool matches = true;
-
         if(hasWhere){
-
             string rowValue = table.rows[i].values[conditionIndex];
-
-            string columnType = toUpper(
-                table.columns[conditionIndex].type
-            );
-
+            string columnType = toUpper(table.columns[conditionIndex].type);
             int comparison = 0;
-
-            // Numeric comparison
             if(columnType == "INT"){
-
                 long long leftValue = stoll(rowValue);
                 long long rightValue = stoll(compareValue);
-
                 if(leftValue < rightValue){
                     comparison = -1;
                 }
@@ -149,10 +121,7 @@ bool executeSelect(
                     comparison = 1;
                 }
             }
-
-            // String comparison
             else{
-
                 if(rowValue < compareValue){
                     comparison = -1;
                 }
@@ -160,8 +129,6 @@ bool executeSelect(
                     comparison = 1;
                 }
             }
-
-            // Apply comparison operator
             if(conditionOperator == "="){
                 matches = (comparison == 0);
             }
@@ -185,30 +152,21 @@ bool executeSelect(
                 return false;
             }
         }
-
-        // Display only matching rows
         if(matches){
-
             for(int j = 0; j < columnIndexes.size(); j++){
-
                 cout << table.rows[i].values[columnIndexes[j]];
-
                 if(j != columnIndexes.size() - 1){
                     cout << "\t";
                 }
             }
-
             cout << endl;
             rowsPrinted++;
         }
     }
-
     if(hasWhere && rowsPrinted == 0){
         cout << "No matching records found." << endl;
     }
-
     errorMessage = "SELECT completed successfully.";
-
     return true;
 }
 bool createTable(
