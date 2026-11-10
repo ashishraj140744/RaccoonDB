@@ -48,17 +48,16 @@ bool validateValue(string value, string columnType, string& errorMessage);
 bool executeSelect(
     Table& table,
     vector<string> selectedColumns,
-    bool hasWhere,
-    string conditionColumn,
-    string conditionOperator,
-    string conditionValue,
+    const vector<Condition>& conditions,
+    const vector<string>& logicalOperators,
     string& errorMessage
 ){
     vector<int> columnIndexes;
     for(int i = 0; i < selectedColumns.size(); i++){
         bool found = false;
         for(int j = 0; j < table.columns.size(); j++){
-            if(toUpper(table.columns[j].name) == toUpper(selectedColumns[i])){
+            if (toUpper(table.columns[j].name) ==
+                toUpper(selectedColumns[i])){
                 columnIndexes.push_back(j);
                 found = true;
                 break;
@@ -69,35 +68,52 @@ bool executeSelect(
             return false;
         }
     }
-    int conditionIndex = -1;
-    if(hasWhere){
-        for(int i = 0; i < table.columns.size(); i++){
-            if(toUpper(table.columns[i].name) == toUpper(conditionColumn)){
-                conditionIndex = i;
+    if(logicalOperators.size() +
+        (conditions.empty() ? 0 : 1) != conditions.size()){
+        errorMessage = "Invalid WHERE condition structure.";
+        return false;
+    }
+    vector<int> conditionIndexes;
+    vector<string> compareValues;
+    for(int i = 0; i < conditions.size(); i++){
+        int conditionIndex = -1;
+        for(int j = 0; j < table.columns.size(); j++){
+            if(toUpper(table.columns[j].name) ==
+                toUpper(conditions[i].column)){
+                conditionIndex = j;
                 break;
             }
         }
         if(conditionIndex == -1){
-            errorMessage = "WHERE column '" + conditionColumn + "' does not exist.";
+            errorMessage = "WHERE column '" +
+                           conditions[i].column + "' does not exist.";
             return false;
         }
         if(!validateValue(
-            conditionValue,
+            conditions[i].value,
             table.columns[conditionIndex].type,
             errorMessage
         )){
             errorMessage = "Invalid WHERE value for column '" +
-                           table.columns[conditionIndex].name + "': " +
-                           errorMessage;
-
+                           table.columns[conditionIndex].name +
+                           "': " + errorMessage;
+            return false;
+        }
+        conditionIndexes.push_back(conditionIndex);
+        string value = conditions[i].value;
+        if(isQuotedString(value)){
+            value = value.substr(1, value.length() - 2);
+        }
+        compareValues.push_back(value);
+    }
+    for(int i = 0; i < logicalOperators.size(); i++){
+        if(logicalOperators[i] != "AND" &&
+            logicalOperators[i] != "OR"){
+            errorMessage = "Unsupported logical operator.";
             return false;
         }
     }
-    string compareValue = conditionValue;
-    if(hasWhere && isQuotedString(compareValue)){
-        compareValue = compareValue.substr(1, compareValue.length() - 2);
-    }
-    for(int i = 0; i < columnIndexes.size(); i++){
+    for (int i = 0; i < columnIndexes.size(); i++){
         cout << table.columns[columnIndexes[i]].name;
         if(i != columnIndexes.size() - 1){
             cout << "\t";
@@ -105,56 +121,79 @@ bool executeSelect(
     }
     cout << endl;
     int rowsPrinted = 0;
-    for(int i = 0; i < table.rows.size(); i++){
+    for(int row = 0; row < table.rows.size(); row++){
         bool matches = true;
-        if(hasWhere){
-            string rowValue = table.rows[i].values[conditionIndex];
-            string columnType = toUpper(table.columns[conditionIndex].type);
-            int comparison = 0;
-            if(columnType == "INT"){
-                long long leftValue = stoll(rowValue);
-                long long rightValue = stoll(compareValue);
-                if(leftValue < rightValue){
-                    comparison = -1;
+        if(!conditions.empty()){
+            vector<bool> conditionResults;
+            for(int c = 0; c < conditions.size(); c++){
+                string rowValue =
+                    table.rows[row].values[conditionIndexes[c]];
+                string columnType =
+                    toUpper(table.columns[conditionIndexes[c]].type);
+                int comparison = 0;
+                if(columnType == "INT"){
+                    long long leftValue = stoll(rowValue);
+                    long long rightValue = stoll(compareValues[c]);
+                    if(leftValue < rightValue){
+                        comparison = -1;
+                    }
+                    else if(leftValue > rightValue){
+                        comparison = 1;
+                    }
                 }
-                else if(leftValue > rightValue){
-                    comparison = 1;
+                else{
+                    if (rowValue < compareValues[c]){
+                        comparison = -1;
+                    }
+                    else if (rowValue > compareValues[c]){
+                        comparison = 1;
+                    }
+                }
+                string op = conditions[c].comparisonOperator;
+                bool result = false;
+                if(op == "="){
+                    result = (comparison == 0);
+                }
+                else if(op == "!=" || op == "<>"){
+                    result = (comparison != 0);
+                }
+                else if(op == ">"){
+                    result = (comparison > 0);
+                }
+                else if(op == "<"){
+                    result = (comparison < 0);
+                }
+                else if(op == ">="){
+                    result = (comparison >= 0);
+                }
+                else if(op == "<="){
+                    result = (comparison <= 0);
+                }
+                else{
+                    errorMessage = "Unsupported comparison operator.";
+                    return false;
+                }
+                conditionResults.push_back(result);
+            }
+            bool currentAndGroup = conditionResults[0];
+            bool anyOrGroupMatches = false;
+            for(int c = 1; c < conditionResults.size(); c++){
+                if(logicalOperators[c - 1] == "AND"){
+                    currentAndGroup =
+                        currentAndGroup && conditionResults[c];
+                }
+                else{
+                    anyOrGroupMatches =
+                        anyOrGroupMatches || currentAndGroup;
+
+                    currentAndGroup = conditionResults[c];
                 }
             }
-            else{
-                if(rowValue < compareValue){
-                    comparison = -1;
-                }
-                else if(rowValue > compareValue){
-                    comparison = 1;
-                }
-            }
-            if(conditionOperator == "="){
-                matches = (comparison == 0);
-            }
-            else if(conditionOperator == "!=" || conditionOperator == "<>"){
-                matches = (comparison != 0);
-            }
-            else if(conditionOperator == ">"){
-                matches = (comparison > 0);
-            }
-            else if(conditionOperator == "<"){
-                matches = (comparison < 0);
-            }
-            else if(conditionOperator == ">="){
-                matches = (comparison >= 0);
-            }
-            else if(conditionOperator == "<="){
-                matches = (comparison <= 0);
-            }
-            else{
-                errorMessage = "Unsupported comparison operator.";
-                return false;
-            }
+            matches = anyOrGroupMatches || currentAndGroup;
         }
         if(matches){
-            for(int j = 0; j < columnIndexes.size(); j++){
-                cout << table.rows[i].values[columnIndexes[j]];
+            for (int j = 0; j < columnIndexes.size(); j++){
+                cout << table.rows[row].values[columnIndexes[j]];
                 if(j != columnIndexes.size() - 1){
                     cout << "\t";
                 }
@@ -163,7 +202,7 @@ bool executeSelect(
             rowsPrinted++;
         }
     }
-    if(hasWhere && rowsPrinted == 0){
+    if(!conditions.empty() && rowsPrinted == 0){
         cout << "No matching records found." << endl;
     }
     errorMessage = "SELECT completed successfully.";

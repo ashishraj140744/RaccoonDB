@@ -3,18 +3,22 @@
 #include <string>
 #include <vector>
 using namespace std;
-bool parseSelect( 
-    const vector<string>& tokens, 
-    vector<string>& selectedColumns, 
-    string& tableName, 
-    bool& hasWhere,
-    string& conditionColumn,
-    string& conditionOperator,
-    string& conditionValue, 
+class Condition{
+public:
+    string column;
+    string comparisonOperator;
+    string value;
+};
+bool parseSelect(
+    const vector<string>& tokens,
+    vector<string>& selectedColumns,
+    string& tableName,
+    vector<Condition>& conditions,
+    vector<string>& logicalOperators,
     string& errorMessage
 );
 bool parseCreateTable(
-    const vector<string>& tokens, 
+    const vector<string>& tokens,
     string& tableName,
     vector<string>& columnNames,
     vector<string>& columnTypes,

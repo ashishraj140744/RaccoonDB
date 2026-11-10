@@ -11,13 +11,11 @@ bool isComparisonOperator(string op){
     return op == "=" || op == "!=" || op == "<>" || op == ">" || op == "<" || op == ">=" || op == "<=";
 }
 bool parseSelect(
-    const vector<string>& tokens, 
-    vector<string>& selectedColumns, 
-    string& tableName, 
-    bool& hasWhere,
-    string& conditionColumn,
-    string& conditionOperator,
-    string& conditionValue,
+    const vector<string>& tokens,
+    vector<string>& selectedColumns,
+    string& tableName,
+    vector<Condition>& conditions,
+    vector<string>& logicalOperators,
     string& errorMessage
 ){
     if(tokens.empty()){
@@ -30,19 +28,18 @@ bool parseSelect(
     }
     selectedColumns.clear();
     tableName.clear();
-    hasWhere = false;
-    conditionColumn.clear();
-    conditionOperator.clear();
-    conditionValue.clear();
+    conditions.clear();
+    logicalOperators.clear();
     int i = 1;
-    if(i >= tokens.size() || tokens[i] == "FROM" || tokens[i] == "," || tokens[i] == ";"){
+    if(i >= tokens.size() || tokens[i] == "FROM" ||
+        tokens[i] == "," || tokens[i] == ";"){
         errorMessage = "Expected a column name or * after SELECT.";
         return false;
     }
     if(tokens[i] == "*"){
         selectedColumns.push_back("*");
         i++;
-        if(i >= tokens.size() || toUpperCase(tokens[i]) != "FROM"){
+        if (i >= tokens.size() || toUpperCase(tokens[i]) != "FROM"){
             errorMessage = "Expected FROM after *.";
             return false;
         }
@@ -57,7 +54,9 @@ bool parseSelect(
             i++;
             if(i < tokens.size() && tokens[i] == ","){
                 i++;
-                if(i >= tokens.size() || tokens[i] == "," || tokens[i] == ";" || tokens[i] == "*" || toUpperCase(tokens[i]) == "FROM"){
+                if(i >= tokens.size() || tokens[i] == "," ||
+                    tokens[i] == ";" || tokens[i] == "*" ||
+                    toUpperCase(tokens[i]) == "FROM") {
                     errorMessage = "Expected a column name after comma.";
                     return false;
                 }
@@ -73,45 +72,62 @@ bool parseSelect(
         return false;
     }
     i++;
-    if(i >= tokens.size() || tokens[i] == ";" || tokens[i] == "," || tokens[i] == "*"){
+    if(i >= tokens.size() || tokens[i] == ";" ||
+        tokens[i] == "," || tokens[i] == "*"){
         errorMessage = "Expected a table name after FROM.";
         return false;
     }
     tableName = tokens[i];
     i++;
     if(i < tokens.size() && toUpperCase(tokens[i]) == "WHERE"){
-        hasWhere = true;
         i++;
-        if(i >= tokens.size() || tokens[i] == ";" || tokens[i] == "," || isComparisonOperator(tokens[i])){
-            errorMessage = "Expected a column name after WHERE.";
-            return false;
+        while(true){
+            if(i >= tokens.size() || tokens[i] == ";" ||
+                tokens[i] == "," || isComparisonOperator(tokens[i]) ||
+                toUpperCase(tokens[i]) == "AND" ||
+                toUpperCase(tokens[i]) == "OR") {
+                errorMessage = "Expected a column name in WHERE condition.";
+                return false;
+            }
+            Condition condition;
+            condition.column = tokens[i];
+            i++;
+            if(i >= tokens.size() || !isComparisonOperator(tokens[i])){
+                errorMessage = "Expected a valid comparison operator after the WHERE column.";
+                return false;
+            }
+            condition.comparisonOperator = tokens[i];
+            i++;
+            if(i >= tokens.size() || tokens[i] == ";" ||
+                tokens[i] == "," || isComparisonOperator(tokens[i]) ||
+                toUpperCase(tokens[i]) == "AND" ||
+                toUpperCase(tokens[i]) == "OR") {
+                errorMessage = "Expected a value after the WHERE operator.";
+                return false;
+            }
+            condition.value = tokens[i];
+            i++;
+            conditions.push_back(condition);
+            if(i < tokens.size() &&
+                (toUpperCase(tokens[i]) == "AND" ||
+                 toUpperCase(tokens[i]) == "OR")) {
+                logicalOperators.push_back(toUpperCase(tokens[i]));
+                i++;
+                continue;
+            }
+            break;
         }
-        conditionColumn = tokens[i];
-        i++;
-        if(i >= tokens.size() || !isComparisonOperator(tokens[i])){
-            errorMessage = "Expected a valid comparison operator after the WHERE column.";
-            return false;
-        }
-        conditionOperator = tokens[i];
-        i++;
-        if(i >= tokens.size() || tokens[i] == ";" || tokens[i] == "," || isComparisonOperator(tokens[i])){
-            errorMessage = "Expected a value after the WHERE operator.";
-            return false;
-        }
-        conditionValue = tokens[i];
-        i++;
     }
     if(i < tokens.size() && tokens[i] == ";"){
         i++;
     }
     if(i != tokens.size()){
-        errorMessage = "Unexpected extra tokens after table name.";
+        errorMessage = "Unexpected extra tokens after SELECT statement.";
         return false;
     }
     errorMessage = "SELECT command structure is valid.";
     return true;
 }
-
 bool parseCreateTable(
     const vector<string>& tokens,
     string& tableName,

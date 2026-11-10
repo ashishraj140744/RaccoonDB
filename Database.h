@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "Parser.h"
 using namespace std;
 class Column{
 public:
@@ -28,10 +29,8 @@ Table* findTable(Database& db, string tableName);
 bool executeSelect(
     Table& table,
     vector<string> selectedColumns,
-    bool hasWhere,
-    string conditionColumn,
-    string conditionOperator,
-    string conditionValue,
+    const vector<Condition>& conditions,
+    const vector<string>& logicalOperators,
     string& errorMessage
 );
 bool createTable(

@@ -118,19 +118,15 @@ int main(){
         if(commandType == "SELECT"){
             vector<string> selectedColumns;
             string tableName;
-            bool hasWhere = false;
-            string conditionColumn;
-            string conditionOperator;
-            string conditionValue;
+            vector<Condition> conditions;
+            vector<string> logicalOperators;
             string errorMessage;
-            if(!parseSelect(
-                tokens, 
-                selectedColumns, 
-                tableName, 
-                hasWhere,
-                conditionColumn,
-                conditionOperator,
-                conditionValue, 
+            if (!parseSelect(
+                tokens,
+                selectedColumns,
+                tableName,
+                conditions,
+                logicalOperators,
                 errorMessage
             )){
                 cout << "Parser error: " << errorMessage << endl;
@@ -141,27 +137,23 @@ int main(){
                 cout << "Error: Table '" << tableName << "' does not exist." << endl;
                 continue;
             }
-            if(selectedColumns.size() == 1 && selectedColumns[0] == "*"){
+            if(selectedColumns.size() == 1 &&
+                selectedColumns[0] == "*"){
                 selectedColumns.clear();
                 for(int i = 0; i < table->columns.size(); i++){
-                    selectedColumns.push_back(
-                        table->columns[i].name
-                    );
+                    selectedColumns.push_back(table->columns[i].name);
                 }
             }
             if(!executeSelect(
-                    *table,
-                    selectedColumns,
-                    hasWhere,
-                    conditionColumn,
-                    conditionOperator,
-                    conditionValue,
-                    errorMessage
-                )){
-                    cout << "Error: " << errorMessage << endl;
-                }
-
-                continue;
+                *table,
+                selectedColumns,
+                conditions,
+                logicalOperators,
+                errorMessage
+            )){
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
         }
         if(commandType == "INSERT"){
             string tableName;
