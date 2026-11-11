@@ -672,3 +672,25 @@ bool parseUseDatabase(
     databaseName = tokens[1];
     return true;
 }
+bool parseDropDatabase(
+    const vector<string>& tokens,
+    string& databaseName,
+    string& errorMessage
+){
+    if(tokens.size() < 3 ||
+       tokens[0] != "DROP" ||
+       tokens[1] != "DATABASE"){
+        errorMessage = "Invalid DROP DATABASE command.";
+        return false;
+    }
+    if(tokens.size() == 3){
+        databaseName = tokens[2];
+        return true;
+    }
+    if(tokens.size() == 4 && tokens[3] == ";"){
+        databaseName = tokens[2];
+        return true;
+    }
+    errorMessage = "Unexpected extra tokens after database name.";
+    return false;
+}
