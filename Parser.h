@@ -77,4 +77,9 @@ bool parseShowTables(
     const vector<string>& tokens,
     string& errorMessage
 );
+bool parseDropTable(
+    const vector<string>& tokens,
+    string& tableName,
+    string& errorMessage
+);
 #endif
