@@ -68,4 +68,9 @@ bool parseUseDatabase(
     string& databaseName,
     string& errorMessage
 );
+bool parseDropDatabase(
+    const vector<string>& tokens,
+    string& databaseName,
+    string& errorMessage
+);
 #endif
