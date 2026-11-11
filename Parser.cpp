@@ -652,3 +652,23 @@ bool parseShowDatabases(
     errorMessage = "Unexpected extra tokens after DATABASES.";
     return false;
 }
+bool parseUseDatabase(
+    const vector<string>& tokens,
+    string& databaseName,
+    string& errorMessage
+){
+    if(tokens.size() < 2 || tokens[0] != "USE"){
+        errorMessage = "Invalid USE DATABASE command.";
+        return false;
+    }
+    if(tokens.size() == 3 && tokens[2] != ";"){
+        errorMessage = "Unexpected extra tokens after database name.";
+        return false;
+    }
+    if(tokens.size() > 3){
+        errorMessage = "Unexpected extra tokens after database name.";
+        return false;
+    }
+    databaseName = tokens[1];
+    return true;
+}
