@@ -54,4 +54,9 @@ bool parseDelete(
     vector<string>& logicalOperators,
     string& errorMessage
 );
+bool parseCreateDatabase(
+    const vector<string>& tokens,
+    string& databaseName,
+    string& errorMessage
+);
 #endif
