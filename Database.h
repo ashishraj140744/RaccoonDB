@@ -50,4 +50,12 @@ bool executeInsert(
     const vector<string>& values,
     string& errorMessage
 );
+bool executeUpdate(
+    Database& db,
+    string tableName,
+    const vector<Assignment>& assignments,
+    const vector<Condition>& conditions,
+    const vector<string>& logicalOperators,
+    string& errorMessage
+);
 #endif

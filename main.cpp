@@ -193,6 +193,38 @@ int main(){
             }
             continue;
         }
+        if(commandType == "UPDATE"){
+            string tableName;
+            vector<Assignment> assignments;
+            vector<Condition> conditions;
+            vector<string> logicalOperators;
+            string errorMessage;
+            if(!parseUpdate(
+                tokens,
+                tableName,
+                assignments,
+                conditions,
+                logicalOperators,
+                errorMessage
+            )){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(executeUpdate(
+                db,
+                tableName,
+                assignments,
+                conditions,
+                logicalOperators,
+                errorMessage
+            )){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
+        }
         cout << "Error: Unsupported command." << endl;
     }
     return 0;
