@@ -1,10 +1,7 @@
 #include "Database.h"
-
 using namespace std;
-
 class MergeSort{
 public:
-
     static void sort(
         vector<int>& indexes,
         const Table& table,
@@ -12,9 +9,7 @@ public:
         bool ascending,
         bool numeric
     );
-
 private:
-
     static void mergeSort(
         vector<int>& indexes,
         vector<int>& temp,
@@ -25,7 +20,6 @@ private:
         bool ascending,
         bool numeric
     );
-
     static void merge(
         vector<int>& indexes,
         vector<int>& temp,
@@ -38,9 +32,6 @@ private:
         bool numeric
     );
 };
-
-
-// Public sorting function
 void MergeSort::sort(
     vector<int>& indexes,
     const Table& table,
@@ -51,9 +42,7 @@ void MergeSort::sort(
     if(indexes.size() <= 1){
         return;
     }
-
     vector<int> temp(indexes.size());
-
     mergeSort(
         indexes,
         temp,
@@ -65,9 +54,6 @@ void MergeSort::sort(
         numeric
     );
 }
-
-
-// Divide the array into smaller parts
 void MergeSort::mergeSort(
     vector<int>& indexes,
     vector<int>& temp,
@@ -81,27 +67,20 @@ void MergeSort::mergeSort(
     if(left >= right){
         return;
     }
-
     int middle = left + (right - left) / 2;
-
     mergeSort(
         indexes, temp, left, middle,
         table, columnIndex, ascending, numeric
     );
-
     mergeSort(
         indexes, temp, middle + 1, right,
         table, columnIndex, ascending, numeric
     );
-
     merge(
         indexes, temp, left, middle, right,
         table, columnIndex, ascending, numeric
     );
 }
-
-
-// Merge the two sorted parts
 void MergeSort::merge(
     vector<int>& indexes,
     vector<int>& temp,
@@ -116,31 +95,22 @@ void MergeSort::merge(
     int i = left;
     int j = middle + 1;
     int k = left;
-
     while(i <= middle && j <= right){
-
         string first =
             table.rows[indexes[i]].values[columnIndex];
-
         string second =
             table.rows[indexes[j]].values[columnIndex];
-
         bool takeFirst;
-
         if(numeric){
-
             long long a = stoll(first);
             long long b = stoll(second);
-
             takeFirst = ascending ? a <= b : a >= b;
         }
         else{
-
             takeFirst = ascending
                 ? first <= second
                 : first >= second;
         }
-
         if(takeFirst){
             temp[k++] = indexes[i++];
         }
@@ -148,22 +118,16 @@ void MergeSort::merge(
             temp[k++] = indexes[j++];
         }
     }
-
     while(i <= middle){
         temp[k++] = indexes[i++];
     }
-
     while(j <= right){
         temp[k++] = indexes[j++];
     }
-
     for(int x = left; x <= right; x++){
         indexes[x] = temp[x];
     }
 }
-
-
-// Function used by Database.cpp
 void sortRows(
     vector<int>& indexes,
     const Table& table,
