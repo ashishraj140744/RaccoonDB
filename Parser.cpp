@@ -515,3 +515,88 @@ bool parseUpdate(
     errorMessage = "UPDATE command structure is valid.";
     return true;
 }
+bool parseDelete(
+    const vector<string>& tokens,
+    string& tableName,
+    vector<Condition>& conditions,
+    vector<string>& logicalOperators,
+    string& errorMessage
+){
+    tableName.clear();
+    conditions.clear();
+    logicalOperators.clear();
+    if(tokens.size() < 3 ||
+        toUpperCase(tokens[0]) != "DELETE"){
+        errorMessage = "Invalid DELETE command.";
+        return false;
+    }
+    if(toUpperCase(tokens[1]) != "FROM"){
+        errorMessage = "Expected FROM after DELETE.";
+        return false;
+    }
+    if(tokens[2] == ";" ||
+        tokens[2] == "," ||
+        toUpperCase(tokens[2]) == "WHERE"){
+        errorMessage = "Expected table name after FROM.";
+        return false;
+    }
+    tableName = tokens[2];
+    int i = 3;
+    if(i < tokens.size() &&
+        toUpperCase(tokens[i]) == "WHERE"){
+        i++;
+        while(true){
+            if(i >= tokens.size() ||
+                tokens[i] == ";" ||
+                tokens[i] == "," ||
+                isComparisonOperator(tokens[i]) ||
+                toUpperCase(tokens[i]) == "AND" ||
+                toUpperCase(tokens[i]) == "OR"){
+                errorMessage = "Expected column in WHERE condition.";
+                return false;
+            }
+            Condition condition;
+            condition.column = tokens[i];
+            i++;
+            if(i >= tokens.size() ||
+                !isComparisonOperator(tokens[i])){
+                errorMessage = "Expected comparison operator in WHERE.";
+                return false;
+            }
+            condition.comparisonOperator = tokens[i];
+            i++;
+            if(i >= tokens.size() ||
+                tokens[i] == ";" ||
+                tokens[i] == "," ||
+                isComparisonOperator(tokens[i]) ||
+                toUpperCase(tokens[i]) == "AND" ||
+                toUpperCase(tokens[i]) == "OR"){
+                errorMessage = "Expected value in WHERE condition.";
+                return false;
+            }
+            condition.value = tokens[i];
+            i++;
+            conditions.push_back(condition);
+            if(i < tokens.size() &&
+                (toUpperCase(tokens[i]) == "AND" ||
+                 toUpperCase(tokens[i]) == "OR")){
+                logicalOperators.push_back(
+                    toUpperCase(tokens[i])
+                );
+                i++;
+                continue;
+            }
+            break;
+        }
+    }
+    if(i < tokens.size() && tokens[i] == ";"){
+        i++;
+    }
+    if(i != tokens.size()){
+        errorMessage =
+            "Unexpected extra tokens after DELETE statement.";
+        return false;
+    }
+    errorMessage = "DELETE command structure is valid.";
+    return true;
+}
