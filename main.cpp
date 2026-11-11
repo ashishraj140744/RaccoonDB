@@ -162,6 +162,25 @@ int main(){
             }
             continue;
         }
+        if(commandType == "SHOW" &&
+            tokens.size() > 1 &&
+            tokens[1] == "TABLES"){
+            string errorMessage;
+            if(!parseShowTables(tokens, errorMessage)){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            cout << "Tables:" << endl;
+            if(db.tables.empty()){
+                cout << "No tables found." << endl;
+            }
+            else{
+                for(int i = 0; i < db.tables.size(); i++){
+                    cout << db.tables[i].name << endl;
+                }
+            }
+            continue;
+        }
         if(commandType == "CREATE"){
             string tableName;
             vector<string> columnNames;
