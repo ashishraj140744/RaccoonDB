@@ -3,6 +3,7 @@
 #include <editline/readline.h>
 #include <cstdlib>
 #include <cctype>
+#include <iomanip>
 #include <vector>
 #include "Tokenizer.h"
 #include "Parser.h"
@@ -161,6 +162,30 @@ int main(){
             }
             else{
                 cout << "Error: " << errorMessage << endl;
+            }
+            continue;
+        }
+        if(commandType == "DESCRIBE" &&
+        tokens.size() > 1 &&
+        tokens[1] == "TABLE"){
+            string tableName;
+            string errorMessage;
+            if(!parseDescribeTable(tokens, tableName, errorMessage)){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            Table* table = findTable(db, tableName);
+            if(table == nullptr){
+                cout << "Error: Table '" << tableName << "' does not exist." << endl;
+                continue;
+            }
+            cout << "Table: " << table->name << endl;
+            cout << endl;
+            cout << left << setw(20) << "Column Name"
+                << "Data Type" << endl;
+            for(int i = 0; i < table->columns.size(); i++){
+                cout << left << setw(20) << table->columns[i].name
+                    << table->columns[i].type << endl;
             }
             continue;
         }
