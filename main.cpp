@@ -43,8 +43,12 @@ int main(){
     cout << "        Database Engine in C++" << endl;
     cout << "Type HELP; to see supported commands." << endl;
     cout << endl;
-    Database db;
-    createSampleDatabase(db);
+    DatabaseManager manager;
+    Database defaultDatabase;
+    defaultDatabase.name = "default";
+    createSampleDatabase(defaultDatabase);
+    manager.databases.push_back(defaultDatabase);
+    manager.currentDatabaseIndex = 0;
     string command;
     string line;
     while (true) {
@@ -85,6 +89,32 @@ int main(){
         string commandType = tokens[0];
         for (int i = 0; i < commandType.length(); i++) {
             commandType[i] = toupper(commandType[i]);
+        }
+        Database& db = manager.databases[manager.currentDatabaseIndex];
+        if(commandType == "CREATE" &&
+            tokens.size() > 1 &&
+            tokens[1] == "DATABASE"){
+            string databaseName;
+            string errorMessage;
+            if(!parseCreateDatabase(
+                tokens,
+                databaseName,
+                errorMessage
+            )){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(createDatabase(
+                manager,
+                databaseName,
+                errorMessage
+            )){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
         }
         if(commandType == "CREATE"){
             string tableName;

@@ -23,7 +23,21 @@ public:
 class Database{
 public:
     vector<Table> tables;
+    string name;
 };
+class DatabaseManager{
+public:
+    vector<Database> databases;
+    int currentDatabaseIndex;
+    DatabaseManager(){
+        currentDatabaseIndex = -1;
+    }
+};
+bool createDatabase(
+    DatabaseManager& manager,
+    string databaseName,
+    string& errorMessage
+);
 void createSampleDatabase(Database& db);
 Table* findTable(Database& db, string tableName);
 bool executeSelect(

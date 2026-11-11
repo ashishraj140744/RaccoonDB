@@ -774,3 +774,24 @@ bool executeDelete(
                    " row(s) deleted successfully.";
     return true;
 }
+
+bool createDatabase(
+    DatabaseManager& manager,
+    string databaseName,
+    string& errorMessage
+){
+    for(int i = 0; i < manager.databases.size(); i++){
+        if(toUpper(manager.databases[i].name) ==
+            toUpper(databaseName)){
+            errorMessage = "Database '" + databaseName +
+                           "' already exists.";
+            return false;
+        }
+    }
+    Database newDatabase;
+    newDatabase.name = databaseName;
+    manager.databases.push_back(newDatabase);
+    errorMessage = "Database '" + databaseName +
+                   "' created successfully.";
+    return true;
+}
