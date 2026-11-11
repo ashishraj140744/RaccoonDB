@@ -82,4 +82,9 @@ bool parseDropTable(
     string& tableName,
     string& errorMessage
 );
+bool parseDescribeTable(
+    const vector<string>& tokens,
+    string& tableName,
+    string& errorMessage
+);
 #endif
