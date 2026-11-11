@@ -130,6 +130,21 @@ int main(){
                 }
                 continue;
             }
+        if(commandType == "USE"){
+            string databaseName;
+            string errorMessage;
+            if(!parseUseDatabase(tokens, databaseName, errorMessage)){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(useDatabase(manager, databaseName, errorMessage)){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
+        }
         if(commandType == "CREATE"){
             string tableName;
             vector<string> columnNames;

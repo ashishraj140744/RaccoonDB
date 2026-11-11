@@ -795,3 +795,18 @@ bool createDatabase(
                    "' created successfully.";
     return true;
 }
+bool useDatabase(
+    DatabaseManager& manager,
+    string databaseName,
+    string& errorMessage
+){
+    for(int i = 0; i < manager.databases.size(); i++){
+        if(manager.databases[i].name == databaseName){
+            manager.currentDatabaseIndex = i;
+            errorMessage = "Switched to database '" + databaseName + "'.";
+            return true;
+        }
+    }
+    errorMessage = "Database '" + databaseName + "' does not exist.";
+    return false;
+}

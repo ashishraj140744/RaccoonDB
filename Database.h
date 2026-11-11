@@ -79,4 +79,9 @@ bool executeDelete(
     const vector<string>& logicalOperators,
     string& errorMessage
 );
+bool useDatabase(
+    DatabaseManager& manager,
+    string databaseName,
+    string& errorMessage
+);
 #endif
