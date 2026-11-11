@@ -47,4 +47,11 @@ bool parseUpdate(
     vector<string>& logicalOperators,
     string& errorMessage
 );
+bool parseDelete(
+    const vector<string>& tokens,
+    string& tableName,
+    vector<Condition>& conditions,
+    vector<string>& logicalOperators,
+    string& errorMessage
+);
 #endif
