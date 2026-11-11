@@ -374,3 +374,144 @@ bool parseInsert(
     errorMessage = "INSERT command structure is valid.";
     return true;
 }
+
+bool parseUpdate(
+    const vector<string>& tokens,
+    string& tableName,
+    vector<Assignment>& assignments,
+    vector<Condition>& conditions,
+    vector<string>& logicalOperators,
+    string& errorMessage
+){
+    tableName.clear();
+    assignments.clear();
+    conditions.clear();
+    logicalOperators.clear();
+    if(tokens.size() < 7 ||
+        toUpperCase(tokens[0]) != "UPDATE"){
+        errorMessage = "Invalid UPDATE command.";
+        return false;
+    }
+    if(tokens[1] == "SET" || tokens[1] == ";" ||
+        tokens[1] == ","){
+        errorMessage = "Expected table name after UPDATE.";
+        return false;
+    }
+    tableName = tokens[1];
+    int i = 2;
+    if(i >= tokens.size() ||
+        toUpperCase(tokens[i]) != "SET"){
+        errorMessage = "Expected SET after table name.";
+        return false;
+    }
+    i++;
+    while(i < tokens.size()){
+        if(toUpperCase(tokens[i]) == "WHERE" ||
+            tokens[i] == ";" ||
+            tokens[i] == ","){
+            errorMessage = "Expected column name in SET.";
+            return false;
+        }
+        Assignment assignment;
+        assignment.column = tokens[i];
+        i++;
+        if(i >= tokens.size() || tokens[i] != "="){
+            errorMessage = "Expected '=' after column name.";
+            return false;
+        }
+        i++;
+        if(i >= tokens.size() ||
+            tokens[i] == "," ||
+            tokens[i] == ";" ||
+            toUpperCase(tokens[i]) == "WHERE"){
+            errorMessage = "Expected value after '='.";
+            return false;
+        }
+        assignment.value = tokens[i];
+        i++;
+        for(int j = 0; j < assignments.size(); j++){
+            if(toUpperCase(assignments[j].column) ==
+                toUpperCase(assignment.column)){
+                errorMessage = "Column '" +
+                    assignment.column +
+                    "' is assigned more than once.";
+                return false;
+            }
+        }
+        assignments.push_back(assignment);
+        if(i < tokens.size() && tokens[i] == ","){
+            i++;
+            if(i >= tokens.size() ||
+                tokens[i] == ";" ||
+                toUpperCase(tokens[i]) == "WHERE"){
+
+                errorMessage = "Expected another assignment after comma.";
+                return false;
+            }
+        }
+        else{
+            break;
+        }
+    }
+    if(assignments.empty()){
+        errorMessage = "UPDATE must contain at least one assignment.";
+        return false;
+    }
+    if(i < tokens.size() &&
+        toUpperCase(tokens[i]) == "WHERE"){
+        i++;
+        while(true){
+            if(i >= tokens.size() ||
+                tokens[i] == ";" ||
+                tokens[i] == "," ||
+                isComparisonOperator(tokens[i]) ||
+                toUpperCase(tokens[i]) == "AND" ||
+                toUpperCase(tokens[i]) == "OR"){
+                errorMessage = "Expected column in WHERE condition.";
+                return false;
+            }
+            Condition condition;
+            condition.column = tokens[i];
+            i++;
+            if(i >= tokens.size() ||
+                !isComparisonOperator(tokens[i])){
+                errorMessage = "Expected comparison operator in WHERE.";
+                return false;
+            }
+            condition.comparisonOperator = tokens[i];
+            i++;
+            if(i >= tokens.size() ||
+                tokens[i] == ";" ||
+                tokens[i] == "," ||
+                isComparisonOperator(tokens[i]) ||
+                toUpperCase(tokens[i]) == "AND" ||
+                toUpperCase(tokens[i]) == "OR"){
+                errorMessage = "Expected value in WHERE condition.";
+                return false;
+            }
+            condition.value = tokens[i];
+            i++;
+            conditions.push_back(condition);
+            if(i < tokens.size() &&
+                (toUpperCase(tokens[i]) == "AND" ||
+                 toUpperCase(tokens[i]) == "OR")){
+
+                logicalOperators.push_back(
+                    toUpperCase(tokens[i])
+                );
+                i++;
+                continue;
+            }
+            break;
+        }
+    }
+    if(i < tokens.size() && tokens[i] == ";"){
+        i++;
+    }
+    if(i != tokens.size()){
+        errorMessage = "Unexpected extra tokens after UPDATE statement.";
+        return false;
+    }
+    errorMessage = "UPDATE command structure is valid.";
+    return true;
+}
