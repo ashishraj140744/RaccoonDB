@@ -633,3 +633,22 @@ bool parseCreateDatabase(
     errorMessage = "CREATE DATABASE command structure is valid.";
     return true;
 }
+bool parseShowDatabases(
+    const vector<string>& tokens,
+    string& errorMessage
+){
+    if(tokens.size() < 2 ||
+       tokens[0] != "SHOW" ||
+       tokens[1] != "DATABASES"){
+        errorMessage = "Invalid SHOW DATABASES command.";
+        return false;
+    }
+    if(tokens.size() == 2){
+        return true;
+    }
+    if(tokens.size() == 3 && tokens[2] == ";"){
+        return true;
+    }
+    errorMessage = "Unexpected extra tokens after DATABASES.";
+    return false;
+}
