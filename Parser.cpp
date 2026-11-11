@@ -600,3 +600,36 @@ bool parseDelete(
     errorMessage = "DELETE command structure is valid.";
     return true;
 }
+
+bool parseCreateDatabase(
+    const vector<string>& tokens,
+    string& databaseName,
+    string& errorMessage
+){
+    databaseName.clear();
+    if(tokens.size() < 3 ||
+        toUpperCase(tokens[0]) != "CREATE"){
+        errorMessage = "Invalid CREATE DATABASE command.";
+        return false;
+    }
+    if(toUpperCase(tokens[1]) != "DATABASE"){
+        errorMessage = "Expected DATABASE after CREATE.";
+        return false;
+    }
+    if(tokens[2] == ";" || tokens[2] == ","){
+        errorMessage = "Expected database name.";
+        return false;
+    }
+    databaseName = tokens[2];
+    int i = 3;
+    if(i < tokens.size() && tokens[i] == ";"){
+        i++;
+    }
+    if(i != tokens.size()){
+        errorMessage =
+            "Unexpected extra tokens after database name.";
+        return false;
+    }
+    errorMessage = "CREATE DATABASE command structure is valid.";
+    return true;
+}
