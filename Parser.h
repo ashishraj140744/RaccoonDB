@@ -9,6 +9,11 @@ public:
     string comparisonOperator;
     string value;
 };
+class Assignment{
+public:
+    string column;
+    string value;
+};
 bool parseSelect(
     const vector<string>& tokens,
     vector<string>& selectedColumns,
@@ -32,6 +37,14 @@ bool parseInsert(
     string& tableName,
     vector<string>& columnNames,
     vector<string>& values,
+    string& errorMessage
+);
+bool parseUpdate(
+    const vector<string>& tokens,
+    string& tableName,
+    vector<Assignment>& assignments,
+    vector<Condition>& conditions,
+    vector<string>& logicalOperators,
     string& errorMessage
 );
 #endif
