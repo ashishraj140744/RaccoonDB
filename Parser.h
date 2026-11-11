@@ -15,6 +15,9 @@ bool parseSelect(
     string& tableName,
     vector<Condition>& conditions,
     vector<string>& logicalOperators,
+    bool& hasOrderBy,
+    string& orderByColumn,
+    string& orderDirection,
     string& errorMessage
 );
 bool parseCreateTable(
