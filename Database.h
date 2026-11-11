@@ -58,4 +58,11 @@ bool executeUpdate(
     const vector<string>& logicalOperators,
     string& errorMessage
 );
+bool executeDelete(
+    Database& db,
+    string tableName,
+    const vector<Condition>& conditions,
+    const vector<string>& logicalOperators,
+    string& errorMessage
+);
 #endif

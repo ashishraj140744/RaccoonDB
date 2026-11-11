@@ -635,3 +635,142 @@ bool executeUpdate(
                    " row(s) updated successfully.";
     return true;
 }
+bool executeDelete(
+    Database& db,
+    string tableName,
+    const vector<Condition>& conditions,
+    const vector<string>& logicalOperators,
+    string& errorMessage
+){
+    Table* table = findTable(db, tableName);
+    if(table == nullptr){
+        errorMessage = "Table '" + tableName + "' does not exist.";
+        return false;
+    }
+    if(logicalOperators.size() +
+        (conditions.empty() ? 0 : 1) != conditions.size()){
+        errorMessage = "Invalid WHERE condition structure.";
+        return false;
+    }
+    vector<int> conditionIndexes;
+    vector<string> compareValues;
+    for(int i = 0; i < conditions.size(); i++){
+        int columnIndex = -1;
+        for(int j = 0; j < table->columns.size(); j++){
+            if(toUpper(table->columns[j].name) ==
+                toUpper(conditions[i].column)){
+                columnIndex = j;
+                break;
+            }
+        }
+        if(columnIndex == -1){
+            errorMessage = "WHERE column '" +
+                conditions[i].column +
+                "' does not exist.";
+            return false;
+        }
+        if(!validateValue(
+            conditions[i].value,
+            table->columns[columnIndex].type,
+            errorMessage
+        )){
+            errorMessage = "Invalid WHERE value: " + errorMessage;
+            return false;
+        }
+        conditionIndexes.push_back(columnIndex);
+        string value = conditions[i].value;
+        if(isQuotedString(value)){
+            value = value.substr(1, value.length() - 2);
+        }
+        compareValues.push_back(value);
+    }
+    for(int i = 0; i < logicalOperators.size(); i++){
+        if(logicalOperators[i] != "AND" &&
+            logicalOperators[i] != "OR"){
+            errorMessage = "Unsupported logical operator.";
+            return false;
+        }
+    }
+    vector<int> matchingRows;
+    for(int row = 0; row < table->rows.size(); row++){
+        bool matches = true;
+        if(!conditions.empty()){
+            vector<bool> conditionResults;
+            for(int c = 0; c < conditions.size(); c++){
+                string rowValue =
+                    table->rows[row].values[conditionIndexes[c]];
+                string columnType =
+                    toUpper(table->columns[conditionIndexes[c]].type);
+                int comparison = 0;
+                if(columnType == "INT"){
+                    long long leftValue = stoll(rowValue);
+                    long long rightValue = stoll(compareValues[c]);
+                    if(leftValue < rightValue){
+                        comparison = -1;
+                    }
+                    else if(leftValue > rightValue){
+                        comparison = 1;
+                    }
+                }
+                else{
+                    if(rowValue < compareValues[c]){
+                        comparison = -1;
+                    }
+                    else if(rowValue > compareValues[c]){
+                        comparison = 1;
+                    }
+                }
+                string op = conditions[c].comparisonOperator;
+                bool result = false;
+                if(op == "="){
+                    result = (comparison == 0);
+                }
+                else if(op == "!=" || op == "<>"){
+                    result = (comparison != 0);
+                }
+                else if(op == ">"){
+                    result = (comparison > 0);
+                }
+                else if(op == "<"){
+                    result = (comparison < 0);
+                }
+                else if(op == ">="){
+                    result = (comparison >= 0);
+                }
+                else if(op == "<="){
+                    result = (comparison <= 0);
+                }
+                else{
+                    errorMessage = "Unsupported comparison operator.";
+                    return false;
+                }
+                conditionResults.push_back(result);
+            }
+            bool currentAndGroup = conditionResults[0];
+            bool anyOrGroupMatches = false;
+            for(int c = 1; c < conditionResults.size(); c++){
+                if(logicalOperators[c - 1] == "AND"){
+                    currentAndGroup =
+                        currentAndGroup && conditionResults[c];
+                }
+                else{
+                    anyOrGroupMatches =
+                        anyOrGroupMatches || currentAndGroup;
+                    currentAndGroup = conditionResults[c];
+                }
+            }
+            matches = anyOrGroupMatches || currentAndGroup;
+        }
+        if(matches){
+            matchingRows.push_back(row);
+        }
+    }
+    for(int i = static_cast<int>(matchingRows.size()) - 1;
+        i >= 0; i--){
+        int rowIndex = matchingRows[i];
+        table->rows.erase(table->rows.begin() + rowIndex);
+    }
+    errorMessage = to_string(matchingRows.size()) +
+                   " row(s) deleted successfully.";
+    return true;
+}

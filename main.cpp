@@ -225,6 +225,35 @@ int main(){
             }
             continue;
         }
+        if(commandType == "DELETE"){
+            string tableName;
+            vector<Condition> conditions;
+            vector<string> logicalOperators;
+            string errorMessage;
+            if(!parseDelete(
+                tokens,
+                tableName,
+                conditions,
+                logicalOperators,
+                errorMessage
+            )){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(executeDelete(
+                db,
+                tableName,
+                conditions,
+                logicalOperators,
+                errorMessage
+            )){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
+        }
         cout << "Error: Unsupported command." << endl;
     }
     return 0;
