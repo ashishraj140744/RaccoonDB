@@ -89,4 +89,9 @@ bool dropDatabase(
     string databaseName,
     string& errorMessage
 );
+bool dropTable(
+    Database& db,
+    string tableName,
+    string& errorMessage
+);
 #endif

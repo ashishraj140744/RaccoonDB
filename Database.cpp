@@ -836,3 +836,18 @@ bool dropDatabase(
     errorMessage = "Database '" + databaseName + "' does not exist.";
     return false;
 }
+bool dropTable(
+    Database& db,
+    string tableName,
+    string& errorMessage
+){
+    for(int i = 0; i < db.tables.size(); i++){
+        if(toUpper(db.tables[i].name) == toUpper(tableName)){
+            db.tables.erase(db.tables.begin() + i);
+            errorMessage = "Table '" + tableName + "' dropped successfully.";
+            return true;
+        }
+    }
+    errorMessage = "Table '" + tableName + "' does not exist.";
+    return false;
+}

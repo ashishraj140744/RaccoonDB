@@ -147,6 +147,23 @@ int main(){
             }
             continue;
         }
+        if(commandType == "DROP" &&
+        tokens.size() > 1 &&
+        tokens[1] == "TABLE"){
+            string tableName;
+            string errorMessage;
+            if(!parseDropTable(tokens, tableName, errorMessage)){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(dropTable(db, tableName, errorMessage)){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
+        }
         if(commandType == "USE"){
             string databaseName;
             string errorMessage;
