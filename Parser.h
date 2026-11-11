@@ -73,4 +73,8 @@ bool parseDropDatabase(
     string& databaseName,
     string& errorMessage
 );
+bool parseShowTables(
+    const vector<string>& tokens,
+    string& errorMessage
+);
 #endif
