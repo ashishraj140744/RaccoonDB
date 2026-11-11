@@ -735,3 +735,25 @@ bool parseDropTable(
     errorMessage = "Unexpected extra tokens after table name.";
     return false;
 }
+bool parseDescribeTable(
+    const vector<string>& tokens,
+    string& tableName,
+    string& errorMessage
+){
+    if(tokens.size() < 3 ||
+       tokens[0] != "DESCRIBE" ||
+       tokens[1] != "TABLE"){
+        errorMessage = "Invalid DESCRIBE TABLE command.";
+        return false;
+    }
+    if(tokens.size() == 3){
+        tableName = tokens[2];
+        return true;
+    }
+    if(tokens.size() == 4 && tokens[3] == ";"){
+        tableName = tokens[2];
+        return true;
+    }
+    errorMessage = "Unexpected extra tokens after table name.";
+    return false;
+}
