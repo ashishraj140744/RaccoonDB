@@ -31,6 +31,9 @@ bool executeSelect(
     vector<string> selectedColumns,
     const vector<Condition>& conditions,
     const vector<string>& logicalOperators,
+    bool hasOrderBy,
+    string orderByColumn,
+    string orderDirection,
     string& errorMessage
 );
 bool createTable(

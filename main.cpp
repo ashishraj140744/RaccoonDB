@@ -120,13 +120,19 @@ int main(){
             string tableName;
             vector<Condition> conditions;
             vector<string> logicalOperators;
+            bool hasOrderBy;
+            string orderByColumn;
+            string orderDirection;
             string errorMessage;
-            if (!parseSelect(
+            if(!parseSelect(
                 tokens,
                 selectedColumns,
                 tableName,
                 conditions,
                 logicalOperators,
+                hasOrderBy,
+                orderByColumn,
+                orderDirection,
                 errorMessage
             )){
                 cout << "Parser error: " << errorMessage << endl;
@@ -149,6 +155,9 @@ int main(){
                 selectedColumns,
                 conditions,
                 logicalOperators,
+                hasOrderBy,
+                orderByColumn,
+                orderDirection,
                 errorMessage
             )){
                 cout << "Error: " << errorMessage << endl;

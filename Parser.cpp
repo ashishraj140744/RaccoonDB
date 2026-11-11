@@ -33,23 +33,23 @@ bool parseSelect(
     tableName.clear();
     conditions.clear();
     logicalOperators.clear();
-    int i = 1;
-    if(i >= tokens.size() || tokens[i] == "FROM" ||
-        tokens[i] == "," || tokens[i] == ";"){
-        errorMessage = "Expected a column name or * after SELECT.";
+    hasOrderBy = false;
+    orderByColumn = "";
+    orderDirection = "ASC";
+    int i = 1;    
+    if(i >= tokens.size()){
+        errorMessage = "Expected columns after SELECT.";
         return false;
     }
     if(tokens[i] == "*"){
         selectedColumns.push_back("*");
         i++;
-        if (i >= tokens.size() || toUpperCase(tokens[i]) != "FROM"){
-            errorMessage = "Expected FROM after *.";
-            return false;
-        }
     }
     else{
-        while(i < tokens.size() && toUpperCase(tokens[i]) != "FROM"){
-            if(tokens[i] == "," || tokens[i] == ";" || tokens[i] == "*"){
+        while(i < tokens.size() &&
+               toUpperCase(tokens[i]) != "FROM"){
+            if(tokens[i] == "," || tokens[i] == ";" ||
+                tokens[i] == "*"){
                 errorMessage = "Expected a column name.";
                 return false;
             }
@@ -57,68 +57,91 @@ bool parseSelect(
             i++;
             if(i < tokens.size() && tokens[i] == ","){
                 i++;
-                if(i >= tokens.size() || tokens[i] == "," ||
-                    tokens[i] == ";" || tokens[i] == "*" ||
-                    toUpperCase(tokens[i]) == "FROM") {
-                    errorMessage = "Expected a column name after comma.";
+                if(i >= tokens.size() ||
+                    toUpperCase(tokens[i]) == "FROM" ||
+                    tokens[i] == "," || tokens[i] == ";"){
+                    errorMessage = "Expected a column after comma.";
                     return false;
                 }
             }
             else if(i < tokens.size() && toUpperCase(tokens[i]) != "FROM"){
-                errorMessage = "Expected a comma or FROM after column name.";
+                errorMessage = "Expected comma or FROM.";
                 return false;
             }
         }
     }
-    if(i >= tokens.size() || toUpperCase(tokens[i]) != "FROM"){
-        errorMessage = "Expected FROM after the column list.";
+    if(i >= tokens.size() ||
+        toUpperCase(tokens[i]) != "FROM"){
+        errorMessage = "Expected FROM.";
         return false;
     }
     i++;
-    if(i >= tokens.size() || tokens[i] == ";" ||
-        tokens[i] == "," || tokens[i] == "*"){
-        errorMessage = "Expected a table name after FROM.";
+    if(i >= tokens.size() || tokens[i] == ";" || tokens[i] == ","){
+        errorMessage = "Expected table name.";
         return false;
     }
     tableName = tokens[i];
     i++;
     if(i < tokens.size() && toUpperCase(tokens[i]) == "WHERE"){
         i++;
-        while(true){
+        while (true){
             if(i >= tokens.size() || tokens[i] == ";" ||
-                tokens[i] == "," || isComparisonOperator(tokens[i]) ||
+                tokens[i] == "," ||
+                isComparisonOperator(tokens[i]) ||
                 toUpperCase(tokens[i]) == "AND" ||
-                toUpperCase(tokens[i]) == "OR") {
-                errorMessage = "Expected a column name in WHERE condition.";
+                toUpperCase(tokens[i]) == "OR" ||
+                toUpperCase(tokens[i]) == "ORDER"){
+                errorMessage = "Expected a column in WHERE condition.";
                 return false;
             }
             Condition condition;
             condition.column = tokens[i];
             i++;
-            if(i >= tokens.size() || !isComparisonOperator(tokens[i])){
-                errorMessage = "Expected a valid comparison operator after the WHERE column.";
+            if(i >= tokens.size() ||
+                !isComparisonOperator(tokens[i])){
+                errorMessage = "Expected comparison operator.";
                 return false;
             }
             condition.comparisonOperator = tokens[i];
             i++;
-            if(i >= tokens.size() || tokens[i] == ";" ||
-                tokens[i] == "," || isComparisonOperator(tokens[i]) ||
+            if(i >= tokens.size() || tokens[i] == ";" || tokens[i] == "," ||
+                isComparisonOperator(tokens[i]) ||
                 toUpperCase(tokens[i]) == "AND" ||
-                toUpperCase(tokens[i]) == "OR") {
-                errorMessage = "Expected a value after the WHERE operator.";
+                toUpperCase(tokens[i]) == "OR" ||
+                toUpperCase(tokens[i]) == "ORDER"){
+                errorMessage = "Expected comparison value.";
                 return false;
             }
             condition.value = tokens[i];
             i++;
             conditions.push_back(condition);
-            if(i < tokens.size() &&
-                (toUpperCase(tokens[i]) == "AND" ||
-                 toUpperCase(tokens[i]) == "OR")) {
-                logicalOperators.push_back(toUpperCase(tokens[i]));
+            if(i < tokens.size() && (toUpperCase(tokens[i]) == "AND" || toUpperCase(tokens[i]) == "OR")){
+                logicalOperators.push_back(
+                    toUpperCase(tokens[i])
+                );
                 i++;
                 continue;
             }
             break;
+        }
+    }
+    if(i < tokens.size() && toUpperCase(tokens[i]) == "ORDER"){
+        hasOrderBy = true;
+        i++;
+        if(i >= tokens.size() || toUpperCase(tokens[i]) != "BY"){
+            errorMessage = "Expected BY after ORDER.";
+            return false;
+        }
+        i++;
+        if(i >= tokens.size() || tokens[i] == ";" || tokens[i] == ","){
+            errorMessage = "Expected sorting column after ORDER BY.";
+            return false;
+        }
+        orderByColumn = tokens[i];
+        i++;
+        if(i < tokens.size() && (toUpperCase(tokens[i]) == "ASC" || toUpperCase(tokens[i]) == "DESC")){
+            orderDirection = toUpperCase(tokens[i]);
+            i++;
         }
     }
     if(i < tokens.size() && tokens[i] == ";"){
@@ -172,7 +195,7 @@ bool parseCreateTable(
         }
         string columnName = tokens[i];
         i++;
-        if (i >= tokens.size()) {
+        if(i >= tokens.size()){
             errorMessage = "Expected a column type.";
             return false;
         }

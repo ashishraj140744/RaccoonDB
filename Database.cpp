@@ -1,6 +1,13 @@
 #include "Database.h"
 #include <cctype>
 #include <limits>
+void sortRows(
+    vector<int>& indexes,
+    const Table& table,
+    int columnIndex,
+    bool ascending,
+    bool numeric
+);
 void createSampleDatabase(Database& db){
     Table students;
     students.name = "students";
@@ -50,13 +57,16 @@ bool executeSelect(
     vector<string> selectedColumns,
     const vector<Condition>& conditions,
     const vector<string>& logicalOperators,
+    bool hasOrderBy,
+    string orderByColumn,
+    string orderDirection,
     string& errorMessage
 ){
     vector<int> columnIndexes;
     for(int i = 0; i < selectedColumns.size(); i++){
         bool found = false;
         for(int j = 0; j < table.columns.size(); j++){
-            if (toUpper(table.columns[j].name) ==
+            if(toUpper(table.columns[j].name) ==
                 toUpper(selectedColumns[i])){
                 columnIndexes.push_back(j);
                 found = true;
@@ -64,7 +74,8 @@ bool executeSelect(
             }
         }
         if(!found){
-            errorMessage = "Column '" + selectedColumns[i] + "' does not exist.";
+            errorMessage = "Column '" + selectedColumns[i] +
+                           "' does not exist.";
             return false;
         }
     }
@@ -86,7 +97,8 @@ bool executeSelect(
         }
         if(conditionIndex == -1){
             errorMessage = "WHERE column '" +
-                           conditions[i].column + "' does not exist.";
+                           conditions[i].column +
+                           "' does not exist.";
             return false;
         }
         if(!validateValue(
@@ -113,14 +125,29 @@ bool executeSelect(
             return false;
         }
     }
-    for (int i = 0; i < columnIndexes.size(); i++){
-        cout << table.columns[columnIndexes[i]].name;
-        if(i != columnIndexes.size() - 1){
-            cout << "\t";
+    int sortColumnIndex = -1;
+    if(hasOrderBy){
+        for(int i = 0; i < table.columns.size(); i++){
+            if(toUpper(table.columns[i].name) ==
+                toUpper(orderByColumn)){
+                sortColumnIndex = i;
+                break;
+            }
+        }
+        if(sortColumnIndex == -1){
+            errorMessage = "ORDER BY column '" +
+                           orderByColumn +
+                           "' does not exist.";
+            return false;
+        }
+        orderDirection = toUpper(orderDirection);
+        if(orderDirection != "ASC" &&
+            orderDirection != "DESC"){
+            errorMessage = "ORDER BY direction must be ASC or DESC.";
+            return false;
         }
     }
-    cout << endl;
-    int rowsPrinted = 0;
+    vector<int> matchingRows;
     for(int row = 0; row < table.rows.size(); row++){
         bool matches = true;
         if(!conditions.empty()){
@@ -142,10 +169,10 @@ bool executeSelect(
                     }
                 }
                 else{
-                    if (rowValue < compareValues[c]){
+                    if(rowValue < compareValues[c]){
                         comparison = -1;
                     }
-                    else if (rowValue > compareValues[c]){
+                    else if(rowValue > compareValues[c]){
                         comparison = 1;
                     }
                 }
@@ -185,24 +212,44 @@ bool executeSelect(
                 else{
                     anyOrGroupMatches =
                         anyOrGroupMatches || currentAndGroup;
-
                     currentAndGroup = conditionResults[c];
                 }
             }
             matches = anyOrGroupMatches || currentAndGroup;
         }
         if(matches){
-            for (int j = 0; j < columnIndexes.size(); j++){
-                cout << table.rows[row].values[columnIndexes[j]];
-                if(j != columnIndexes.size() - 1){
-                    cout << "\t";
-                }
-            }
-            cout << endl;
-            rowsPrinted++;
+            matchingRows.push_back(row);
         }
     }
-    if(!conditions.empty() && rowsPrinted == 0){
+    if(hasOrderBy){
+        bool numeric =
+            toUpper(table.columns[sortColumnIndex].type) == "INT";
+        bool ascending = (orderDirection == "ASC");
+        sortRows(
+            matchingRows,
+            table,
+            sortColumnIndex,
+            ascending,
+            numeric
+        );
+    }
+    for(int i = 0; i < columnIndexes.size(); i++){
+        cout << table.columns[columnIndexes[i]].name;
+        if(i != columnIndexes.size() - 1){
+            cout << "\t";
+        }
+    }
+    cout << endl;
+    for(int rowIndex : matchingRows){
+        for(int j = 0; j < columnIndexes.size(); j++){
+            cout << table.rows[rowIndex].values[columnIndexes[j]];
+            if(j != columnIndexes.size() - 1){
+                cout << "\t";
+            }
+        }
+        cout << endl;
+    }
+    if(!conditions.empty() && matchingRows.empty()){
         cout << "No matching records found." << endl;
     }
     errorMessage = "SELECT completed successfully.";
