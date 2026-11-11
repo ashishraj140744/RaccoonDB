@@ -116,6 +116,20 @@ int main(){
             }
             continue;
         }
+        if(commandType == "SHOW" &&
+            tokens.size() > 1 &&
+            tokens[1] == "DATABASES"){
+                string errorMessage;
+                if(!parseShowDatabases(tokens, errorMessage)){
+                    cout << "Parser error: " << errorMessage << endl;
+                    continue;
+                }
+                cout << "Databases:" << endl;
+                for(int i = 0; i < manager.databases.size(); i++){
+                    cout << manager.databases[i].name << endl;
+                }
+                continue;
+            }
         if(commandType == "CREATE"){
             string tableName;
             vector<string> columnNames;
