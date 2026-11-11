@@ -694,3 +694,22 @@ bool parseDropDatabase(
     errorMessage = "Unexpected extra tokens after database name.";
     return false;
 }
+bool parseShowTables(
+    const vector<string>& tokens,
+    string& errorMessage
+){
+    if(tokens.size() < 2 ||
+       tokens[0] != "SHOW" ||
+       tokens[1] != "TABLES"){
+        errorMessage = "Invalid SHOW TABLES command.";
+        return false;
+    }
+    if(tokens.size() == 2){
+        return true;
+    }
+    if(tokens.size() == 3 && tokens[2] == ";"){
+        return true;
+    }
+    errorMessage = "Unexpected extra tokens after TABLES.";
+    return false;
+}
