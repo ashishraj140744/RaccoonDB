@@ -130,6 +130,23 @@ int main(){
                 }
                 continue;
             }
+        if(commandType == "DROP" &&
+        tokens.size() > 1 &&
+        tokens[1] == "DATABASE"){
+            string databaseName;
+            string errorMessage;
+            if(!parseDropDatabase(tokens, databaseName, errorMessage)){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(dropDatabase(manager, databaseName, errorMessage)){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
+        }
         if(commandType == "USE"){
             string databaseName;
             string errorMessage;

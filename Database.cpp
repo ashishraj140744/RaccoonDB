@@ -810,3 +810,29 @@ bool useDatabase(
     errorMessage = "Database '" + databaseName + "' does not exist.";
     return false;
 }
+bool dropDatabase(
+    DatabaseManager& manager,
+    string databaseName,
+    string& errorMessage
+){
+    for(int i = 0; i < manager.databases.size(); i++){
+        if(toUpper(manager.databases[i].name) == toUpper(databaseName)){
+            if(toUpper(databaseName) == "DEFAULT"){
+                errorMessage = "Cannot drop the default database.";
+                return false;
+            }
+            if(i == manager.currentDatabaseIndex){
+                errorMessage = "Cannot drop the currently selected database. Switch to another database first.";
+                return false;
+            }
+            manager.databases.erase(manager.databases.begin() + i);
+            if(i < manager.currentDatabaseIndex){
+                manager.currentDatabaseIndex--;
+            }
+            errorMessage = "Database '" + databaseName + "' dropped successfully.";
+            return true;
+        }
+    }
+    errorMessage = "Database '" + databaseName + "' does not exist.";
+    return false;
+}

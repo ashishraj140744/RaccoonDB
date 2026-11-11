@@ -84,4 +84,9 @@ bool useDatabase(
     string databaseName,
     string& errorMessage
 );
+bool dropDatabase(
+    DatabaseManager& manager,
+    string databaseName,
+    string& errorMessage
+);
 #endif
