@@ -63,4 +63,9 @@ bool parseShowDatabases(
     const vector<string>& tokens,
     string& errorMessage
 );
+bool parseUseDatabase(
+    const vector<string>& tokens,
+    string& databaseName,
+    string& errorMessage
+);
 #endif
