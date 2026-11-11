@@ -59,4 +59,8 @@ bool parseCreateDatabase(
     string& databaseName,
     string& errorMessage
 );
+bool parseShowDatabases(
+    const vector<string>& tokens,
+    string& errorMessage
+);
 #endif
