@@ -8,6 +8,59 @@ void sortRows(
     bool ascending,
     bool numeric
 );
+bool executeSortTable(
+    Database& db,
+    string tableName,
+    string columnName,
+    string direction,
+    string& errorMessage
+){
+    Table* table = findTable(db, tableName);
+    if(table == nullptr){
+        errorMessage = "Table '" + tableName + "' does not exist.";
+        return false;
+    }
+    int columnIndex = -1;
+    for(int i = 0; i < table->columns.size(); i++){
+        if(toUpper(table->columns[i].name) == toUpper(columnName)){
+            columnIndex = i;
+            break;
+        }
+    }
+    if(columnIndex == -1){
+        errorMessage = "Column '" + columnName + "' does not exist.";
+        return false;
+    }
+    direction = toUpper(direction);
+    if(direction != "ASC" && direction != "DESC"){
+        errorMessage = "Sorting direction must be ASC or DESC.";
+        return false;
+    }
+    if(table->rows.size() <= 1){
+        errorMessage = "Table sorted successfully.";
+        return true;
+    }
+    vector<int> indexes;
+    for(int i = 0; i < table->rows.size(); i++){
+        indexes.push_back(i);
+    }
+    bool numeric = toUpper(table->columns[columnIndex].type) == "INT";
+    bool ascending = (direction == "ASC");
+    sortRows(
+        indexes,
+        *table,
+        columnIndex,
+        ascending,
+        numeric
+    );
+    vector<Row> sortedRows;
+    for(int i = 0; i < indexes.size(); i++){
+        sortedRows.push_back(table->rows[indexes[i]]);
+    }
+    table->rows = sortedRows;
+    errorMessage = "Table '" + tableName + "' sorted successfully.";
+    return true;
+}
 void createSampleDatabase(Database& db){
     Table students;
     students.name = "students";
