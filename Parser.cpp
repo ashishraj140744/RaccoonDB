@@ -757,3 +757,29 @@ bool parseDescribeTable(
     errorMessage = "Unexpected extra tokens after table name.";
     return false;
 }
+bool parseSort(
+    const vector<string>& tokens,
+    string& tableName,
+    string& columnName,
+    string& direction,
+    string& errorMessage
+){
+    if(tokens.size() < 6 ||
+       tokens[0] != "SORT" ||
+       tokens[2] != "BY"){
+        errorMessage = "Invalid SORT command. Use SORT table_name BY column_name ASC/DESC;";
+        return false;
+    }
+    if(tokens.size() == 6 && tokens[5] == ";"){
+        tableName = tokens[1];
+        columnName = tokens[3];
+        direction = tokens[4];
+        if(direction != "ASC" && direction != "DESC"){
+            errorMessage = "Sorting direction must be ASC or DESC.";
+            return false;
+        }
+        return true;
+    }
+    errorMessage = "Unexpected extra tokens after SORT command.";
+    return false;
+}
