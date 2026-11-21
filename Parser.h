@@ -96,7 +96,7 @@ bool parseSort(
 );
 bool parseSearch(
     const vector<string>& tokens,
-    string& tableName,
+    string& tableName, 
     string& columnName,
     string& searchValue,
     string& errorMessage
