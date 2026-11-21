@@ -335,6 +335,41 @@ int main(){
             cout << "\n====================================\n";
             continue;
         }
+        if(commandType == "STATS"){
+            if(manager.currentDatabaseIndex < 0 ||
+            manager.currentDatabaseIndex >= manager.databases.size()){
+                cout << "Error: No database selected." << endl;
+                continue;
+            }
+            Database& currentDatabase =
+                manager.databases[manager.currentDatabaseIndex];
+            cout << "\n========== DATABASE STATISTICS ==========\n";
+            cout << "Database: " << currentDatabase.name << endl;
+            cout << "Total Tables: " << currentDatabase.tables.size() << endl;
+            int totalRows = 0;
+            int totalColumns = 0;
+            for(int i = 0; i < currentDatabase.tables.size(); i++){
+                Table& table = currentDatabase.tables[i];
+                cout << "\nTable: " << table.name << endl;
+                cout << "Rows: " << table.rows.size() << endl;
+                cout << "Columns: " << table.columns.size() << endl;
+                cout << "Column Names: ";
+                for(int j = 0; j < table.columns.size(); j++){
+                    cout << table.columns[j].name;
+                    if(j != table.columns.size() - 1){
+                        cout << ", ";
+                    }
+                }
+                cout << endl;
+                totalRows += table.rows.size();
+                totalColumns += table.columns.size();
+            }
+            cout << "\n---------- SUMMARY ----------\n";
+            cout << "Total Records: " << totalRows << endl;
+            cout << "Total Columns Across Tables: " << totalColumns << endl;
+            cout << "==========================================\n";
+            continue;
+        }
         if(commandType == "SELECT"){
             vector<string> selectedColumns;
             string tableName;
