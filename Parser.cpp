@@ -783,3 +783,35 @@ bool parseSort(
     errorMessage = "Unexpected extra tokens after SORT command.";
     return false;
 }
+bool parseSearch(
+    const vector<string>& tokens,
+    string& tableName,
+    string& columnName,
+    string& searchValue,
+    string& errorMessage
+){
+    if(tokens.size() != 7 || tokens[0] != "SEARCH"){
+        errorMessage = "Invalid SEARCH command. Use SEARCH table_name BY column_name = value;";
+        return false;
+    }
+    if(tokens[2] != "BY"){
+        errorMessage = "Expected BY after table name.";
+        return false;
+    }
+    if(tokens[4] != "="){
+        errorMessage = "SEARCH currently supports only the '=' operator.";
+        return false;
+    }
+    if(tokens[6] != ";"){
+        errorMessage = "Expected ';' at the end of SEARCH command.";
+        return false;
+    }
+    tableName = tokens[1];
+    columnName = tokens[3];
+    searchValue = tokens[5];
+    if(searchValue.length() >= 2 &&
+       (searchValue[0] == '\'' || searchValue[0] == '"')){
+        searchValue = searchValue.substr(1, searchValue.length() - 2);
+    }
+    return true;
+}
