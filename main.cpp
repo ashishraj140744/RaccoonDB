@@ -135,11 +135,12 @@ int main(){
                 cout << "Goodbye!" << endl;
                 return 0;
             }
-            command += line + "\n";
+            command += line + " ";
             if(hasStatementEnd(command)){
                 break;
             }
         }
+        add_history(command.c_str());
         vector<string> tokens = tokenize(command);
         if(tokens.empty()){
             continue;
