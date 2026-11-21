@@ -117,6 +117,35 @@ int main(){
             }
             continue;
         }
+        if(commandType == "SORT"){
+            string tableName;
+            string columnName;
+            string direction;
+            string errorMessage;
+            if(!parseSort(
+                tokens,
+                tableName,
+                columnName,
+                direction,
+                errorMessage
+            )){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(executeSortTable(
+                db,
+                tableName,
+                columnName,
+                direction,
+                errorMessage
+            )){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
+        }
         if(commandType == "SHOW" &&
             tokens.size() > 1 &&
             tokens[1] == "DATABASES"){
