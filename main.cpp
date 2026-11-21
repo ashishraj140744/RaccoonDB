@@ -9,6 +9,39 @@
 #include "Parser.h"
 #include "Database.h"
 using namespace std;
+bool isKeyword(string word){
+    string keywords[] = {
+        "CREATE", "DATABASE", "TABLE", "SHOW", "DATABASES",
+        "DROP", "DESCRIBE", "USE", "SORT", "BY", "ASC", "DESC",
+        "SEARCH", "HELP", "STATS", "STATUS", "SELECT", "FROM",
+        "WHERE", "ORDER", "AND", "OR", "INSERT", "INTO", "VALUES",
+        "UPDATE", "SET", "DELETE", "EXIT", "QUIT"
+    };
+    int keywordCount = sizeof(keywords) / sizeof(keywords[0]);
+    for(int i = 0; i < keywordCount; i++){
+        if(word == keywords[i]){
+            return true;
+        }
+    }
+    return false;
+}
+void normalizeKeywords(vector<string>& tokens){
+    for(int i = 0; i < tokens.size(); i++){
+        if(tokens[i].length() >= 2 &&
+           (tokens[i][0] == '\'' || tokens[i][0] == '"')){
+            continue;
+        }
+        string upperWord = tokens[i];
+        for(int j = 0; j < upperWord.length(); j++){
+            upperWord[j] = toupper(
+                static_cast<unsigned char>(upperWord[j])
+            );
+        }
+        if(isKeyword(upperWord)){
+            tokens[i] = upperWord;
+        }
+    }
+}
 bool hasStatementEnd(string command){
     char quote = '\0';
     for(int i = 0; i < command.length(); i++){
@@ -87,10 +120,8 @@ int main(){
         if(tokens.empty()){
             continue;
         }
+        normalizeKeywords(tokens);
         string commandType = tokens[0];
-        for (int i = 0; i < commandType.length(); i++) {
-            commandType[i] = toupper(commandType[i]);
-        }
         Database& db = manager.databases[manager.currentDatabaseIndex];
         if(commandType == "CREATE" &&
             tokens.size() > 1 &&
