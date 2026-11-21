@@ -716,7 +716,7 @@ bool parseShowTables(
 bool parseDropTable(
     const vector<string>& tokens,
     string& tableName,
-    string& errorMessage
+    string& errorMessage 
 ){
     if(tokens.size() < 3 ||
        tokens[0] != "DROP" ||
