@@ -8,6 +8,8 @@
 #include "Tokenizer.h"
 #include "Parser.h"
 #include "Database.h"
+#include "Storage.h"
+#include <filesystem>
 using namespace std;
 bool isKeyword(string word){
     string keywords[] = {
@@ -78,11 +80,33 @@ int main(){
     cout << "Type HELP; to see supported commands." << endl;
     cout << endl;
     DatabaseManager manager;
-    Database defaultDatabase;
-    defaultDatabase.name = "default";
-    createSampleDatabase(defaultDatabase);
-    manager.databases.push_back(defaultDatabase);
-    manager.currentDatabaseIndex = 0;
+    string storageError;
+    if(!loadDatabaseManager(manager, "data", storageError)){
+        if(filesystem::exists("data/databases.txt")){
+            cout << "Storage error: " << storageError << endl;
+            return 1;
+        }
+        Database defaultDatabase;
+        defaultDatabase.name = "default";
+        createSampleDatabase(defaultDatabase);
+        manager.databases.push_back(defaultDatabase);
+        manager.currentDatabaseIndex = 0;
+        if(!saveDatabaseManager(manager, "data", storageError)){
+            cout << "Storage error: " << storageError << endl;
+        }
+        else{
+            cout << "Initial database created." << endl;
+        }
+    }
+    else{
+        cout << "Saved databases loaded successfully." << endl;
+    }
+    auto saveChanges = [&manager](){
+        string errorMessage;
+        if(!saveDatabaseManager(manager, "data", errorMessage)){
+            cout << "Warning: " << errorMessage << endl;
+        }
+    };
     string command;
     string line;
     while (true) {
@@ -141,6 +165,7 @@ int main(){
                 databaseName,
                 errorMessage
             )){
+                saveChanges();
                 cout << errorMessage << endl;
             }
             else{
@@ -276,6 +301,7 @@ int main(){
                 columnTypes,
                 errorMessage
             )){
+                saveChanges();
                 cout << errorMessage << endl;
             }
             else{
@@ -305,6 +331,7 @@ int main(){
                 direction,
                 errorMessage
             )){
+                saveChanges();
                 cout << errorMessage << endl;
             }
             else{
@@ -462,6 +489,7 @@ int main(){
                 values,
                 errorMessage
             )){
+                saveChanges();
                 cout << "Parser error: " << errorMessage << endl;
                 continue;
             }
@@ -472,6 +500,7 @@ int main(){
                 values,
                 errorMessage
             )){
+                saveChanges();
                 cout << errorMessage << endl;
             }
             else{
@@ -504,6 +533,7 @@ int main(){
                 logicalOperators,
                 errorMessage
             )){
+                saveChanges();
                 cout << errorMessage << endl;
             }
             else{
@@ -533,6 +563,7 @@ int main(){
                 logicalOperators,
                 errorMessage
             )){
+                saveChanges();
                 cout << errorMessage << endl;
             }
             else{
@@ -560,7 +591,7 @@ int main(){
             else{
                 cout << "Current Database: None" << endl;
             }
-            cout << "Storage: In-Memory" << endl;
+            cout << "Storage: CSV File Storage" << endl;
             cout << "======================================\n";
             continue;
         }
