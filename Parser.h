@@ -94,4 +94,11 @@ bool parseSort(
     string& direction,
     string& errorMessage
 );
+bool parseSearch(
+    const vector<string>& tokens,
+    string& tableName,
+    string& columnName,
+    string& searchValue,
+    string& errorMessage
+);
 #endif
