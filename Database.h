@@ -94,4 +94,11 @@ bool dropTable(
     string tableName,
     string& errorMessage
 );
+bool executeSortTable(
+    Database& db,
+    string tableName,
+    string columnName,
+    string direction,
+    string& errorMessage
+);
 #endif
