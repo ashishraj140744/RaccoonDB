@@ -474,6 +474,30 @@ int main(){
             }
             continue;
         }
+        if(commandType == "STATUS"){
+            cout << "\n========== RACCOONDB STATUS ==========\n";
+            cout << "Database Engine: RaccoonDB 1.0" << endl;
+            if(manager.currentDatabaseIndex >= 0 &&
+            manager.currentDatabaseIndex < manager.databases.size()){
+                Database& currentDatabase =
+                    manager.databases[manager.currentDatabaseIndex];
+                cout << "Current Database: "
+                    << currentDatabase.name << endl;
+                cout << "Total Tables: "
+                    << currentDatabase.tables.size() << endl;
+                int totalRows = 0;
+                for(int i = 0; i < currentDatabase.tables.size(); i++){
+                    totalRows += currentDatabase.tables[i].rows.size();
+                }
+                cout << "Total Records: " << totalRows << endl;
+            }
+            else{
+                cout << "Current Database: None" << endl;
+            }
+            cout << "Storage: In-Memory" << endl;
+            cout << "======================================\n";
+            continue;
+        }
         cout << "Error: Unsupported command." << endl;
     }
     return 0;
