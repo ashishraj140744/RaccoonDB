@@ -905,3 +905,50 @@ bool dropTable(
     errorMessage = "Table '" + tableName + "' does not exist.";
     return false;
 }
+bool executeSearch(
+    Database& db,
+    string tableName,
+    string columnName,
+    string searchValue,
+    string& errorMessage
+){
+    Table* table = findTable(db, tableName);
+    if(table == nullptr){
+        errorMessage = "Table '" + tableName + "' does not exist.";
+        return false;
+    }
+    int columnIndex = -1;
+    for(int i = 0; i < table->columns.size(); i++){
+        if(toUpperCase(table->columns[i].name) == toUpperCase(columnName)){
+            columnIndex = i;
+            break;
+        }
+    }
+    if(columnIndex == -1){
+        errorMessage = "Column '" + columnName + "' does not exist.";
+        return false;
+    }
+    vector<int> matchingRows = linearSearch(
+        *table,
+        columnIndex,
+        searchValue
+    );
+    if(matchingRows.empty()){
+        cout << "No matching records found." << endl;
+        return true;
+    }
+    cout << "Search results:" << endl;
+    for(int i = 0; i < table->columns.size(); i++){
+        cout << table->columns[i].name << "\t";
+    }
+    cout << endl;
+    for(int i = 0; i < matchingRows.size(); i++){
+        int rowIndex = matchingRows[i];
+        for(int j = 0; j < table->columns.size(); j++){
+            cout << table->rows[rowIndex].values[j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << matchingRows.size() << " record(s) found." << endl;
+    return true;
+}

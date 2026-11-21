@@ -101,4 +101,16 @@ bool executeSortTable(
     string direction,
     string& errorMessage
 );
+vector<int> linearSearch(
+    const Table& table,
+    int columnIndex,
+    string searchValue
+);
+bool executeSearch(
+    Database& db,
+    string tableName,
+    string columnName,
+    string searchValue,
+    string& errorMessage
+);
 #endif

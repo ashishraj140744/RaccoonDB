@@ -281,6 +281,32 @@ int main(){
             }
             continue;
         }
+        if(commandType == "SEARCH"){
+            string tableName;
+            string columnName;
+            string searchValue;
+            string errorMessage;
+            if(!parseSearch(
+                tokens,
+                tableName,
+                columnName,
+                searchValue,
+                errorMessage
+            )){
+                cout << "Parser error: " << errorMessage << endl;
+                continue;
+            }
+            if(!executeSearch(
+                db,
+                tableName,
+                columnName,
+                searchValue,
+                errorMessage
+            )){
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
+        }
         if(commandType == "SELECT"){
             vector<string> selectedColumns;
             string tableName;
