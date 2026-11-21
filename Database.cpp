@@ -1,6 +1,7 @@
 #include "Database.h"
 #include <cctype>
 #include <limits>
+string toUpperCase(string word);
 void sortRows(
     vector<int>& indexes,
     const Table& table,
@@ -22,7 +23,7 @@ bool executeSortTable(
     }
     int columnIndex = -1;
     for(int i = 0; i < table->columns.size(); i++){
-        if(toUpper(table->columns[i].name) == toUpper(columnName)){
+        if(toUpperCase(table->columns[i].name) == toUpperCase(columnName)){
             columnIndex = i;
             break;
         }
@@ -31,7 +32,7 @@ bool executeSortTable(
         errorMessage = "Column '" + columnName + "' does not exist.";
         return false;
     }
-    direction = toUpper(direction);
+    direction = toUpperCase(direction);
     if(direction != "ASC" && direction != "DESC"){
         errorMessage = "Sorting direction must be ASC or DESC.";
         return false;
@@ -44,7 +45,7 @@ bool executeSortTable(
     for(int i = 0; i < table->rows.size(); i++){
         indexes.push_back(i);
     }
-    bool numeric = toUpper(table->columns[columnIndex].type) == "INT";
+    bool numeric = toUpperCase(table->columns[columnIndex].type) == "INT";
     bool ascending = (direction == "ASC");
     sortRows(
         indexes,
