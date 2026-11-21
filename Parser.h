@@ -87,4 +87,11 @@ bool parseDescribeTable(
     string& tableName,
     string& errorMessage
 );
+bool parseSort(
+    const vector<string>& tokens,
+    string& tableName,
+    string& columnName,
+    string& direction,
+    string& errorMessage
+);
 #endif
