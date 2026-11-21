@@ -197,6 +197,7 @@ int main(){
                 continue;
             }
             if(dropDatabase(manager, databaseName, errorMessage)){
+                saveChanges();
                 cout << errorMessage << endl;
             }
             else{
@@ -214,6 +215,7 @@ int main(){
                 continue;
             }
             if(dropTable(db, tableName, errorMessage)){
+                saveChanges();
                 cout << errorMessage << endl;
             }
             else{
