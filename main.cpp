@@ -307,6 +307,34 @@ int main(){
             }
             continue;
         }
+        if(commandType == "HELP"){
+            cout << "\n========== RACCOONDB GUIDE ==========\n";
+            cout << "\nDATABASE COMMANDS:\n";
+            cout << "CREATE DATABASE database_name;\n";
+            cout << "SHOW DATABASES;\n";
+            cout << "USE database_name;\n";
+            cout << "DROP DATABASE database_name;\n";
+            cout << "\nTABLE COMMANDS:\n";
+            cout << "CREATE TABLE table_name (...);\n";
+            cout << "SHOW TABLES;\n";
+            cout << "DROP TABLE table_name;\n";
+            cout << "DESCRIBE TABLE table_name;\n";
+            cout << "\nDATA COMMANDS:\n";
+            cout << "INSERT INTO table_name (...) VALUES (...);\n";
+            cout << "SELECT * FROM table_name;\n";
+            cout << "UPDATE table_name SET column = value WHERE condition;\n";
+            cout << "DELETE FROM table_name WHERE condition;\n";
+            cout << "\nSEARCH AND SORT COMMANDS:\n";
+            cout << "SEARCH table_name BY column = value;\n";
+            cout << "SORT table_name BY column ASC;\n";
+            cout << "SORT table_name BY column DESC;\n";
+            cout << "SELECT * FROM table_name ORDER BY column ASC;\n";
+            cout << "\nOTHER COMMANDS:\n";
+            cout << "HELP;\n";
+            cout << "EXIT;\n";
+            cout << "\n====================================\n";
+            continue;
+        }
         if(commandType == "SELECT"){
             vector<string> selectedColumns;
             string tableName;
