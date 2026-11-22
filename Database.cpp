@@ -60,6 +60,7 @@ bool executeSortTable(
     }
     table->rows = sortedRows;
     errorMessage = "Table '" + tableName + "' sorted successfully.";
+    rebuildHashIndexes(db.name, *table);
     return true;
 }
 void createSampleDatabase(Database& db){
@@ -506,6 +507,7 @@ bool executeInsert(
     newRow.values = newValues;
     table->rows.push_back(newRow);
     errorMessage = "1 row inserted successfully.";
+    rebuildHashIndexes(db.name, *table);
     return true;
 }
 bool executeUpdate(
@@ -687,6 +689,7 @@ bool executeUpdate(
     }
     errorMessage = to_string(matchingRows.size()) +
                    " row(s) updated successfully.";
+    rebuildHashIndexes(db.name, *table);
     return true;
 }
 bool executeDelete(
@@ -826,6 +829,7 @@ bool executeDelete(
     }
     errorMessage = to_string(matchingRows.size()) +
                    " row(s) deleted successfully.";
+    rebuildHashIndexes(db.name, *table);
     return true;
 }
 
@@ -905,6 +909,46 @@ bool dropTable(
     errorMessage = "Table '" + tableName + "' does not exist.";
     return false;
 }
+bool createIndex(
+    Database& db,
+    string tableName,
+    string columnName,
+    string& errorMessage
+){
+    Table* table = findTable(db, tableName);
+    if(table == nullptr){
+        errorMessage = "Table '" + tableName + "' does not exist.";
+        return false;
+    }
+
+    int columnIndex = -1;
+    for(int i = 0; i < table->columns.size(); i++){
+        if(toUpperCase(table->columns[i].name) == toUpperCase(columnName)){
+            columnIndex = i;
+            break;
+        }
+    }
+
+    if(columnIndex == -1){
+        errorMessage = "Column '" + columnName + "' does not exist.";
+        return false;
+    }
+
+    for(int existingIndex : table->indexedColumns){
+        if(existingIndex == columnIndex){
+            errorMessage = "An index already exists on column '" +
+                           table->columns[columnIndex].name + "'.";
+            return false;
+        }
+    }
+
+    table->indexedColumns.push_back(columnIndex);
+    buildHashIndex(db.name, *table, columnIndex);
+    errorMessage = "Hash index created on column '" +
+                   table->columns[columnIndex].name + "'.";
+    return true;
+}
+
 bool executeSearch(
     Database& db,
     string tableName,
@@ -928,11 +972,33 @@ bool executeSearch(
         errorMessage = "Column '" + columnName + "' does not exist.";
         return false;
     }
-    vector<int> matchingRows = linearSearch(
-        *table,
-        columnIndex,
-        searchValue
-    );
+    vector<int> matchingRows;
+    bool usedHashIndex = false;
+
+    for(int indexedColumn : table->indexedColumns){
+        if(indexedColumn == columnIndex){
+            usedHashIndex = searchHashIndex(
+                db.name,
+                *table,
+                columnIndex,
+                searchValue,
+                matchingRows
+            );
+            break;
+        }
+    }
+
+    if(!usedHashIndex){
+        matchingRows = linearSearch(
+            *table,
+            columnIndex,
+            searchValue
+        );
+        cout << "Search method: Linear Search" << endl;
+    }
+    else{
+        cout << "Search method: Hash Table Index" << endl;
+    }
     if(matchingRows.empty()){
         cout << "No matching records found." << endl;
         return true;
