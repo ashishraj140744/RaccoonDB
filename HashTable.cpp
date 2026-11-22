@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
+#include <memory>
+#include "Database.h"
 using namespace std;
 class Node{
 public:
@@ -124,3 +127,36 @@ public:
         clear();
     }
 };
+string makeIndexKey(string databaseName, string tableName, int columnIndex){
+    return databaseName + "." + tableName + "." + to_string(columnIndex);
+}
+static map<string, unique_ptr<HashTable>> hashIndexes;
+void buildHashIndex(string databaseName, Table& table, int columnIndex){
+    string key = makeIndexKey(databaseName, table.name, columnIndex);
+    unique_ptr<HashTable> index(new HashTable());
+    for(int row = 0; row < table.rows.size(); row++){
+        index->insert(table.rows[row].values[columnIndex], row);
+    }
+    hashIndexes[key] = move(index);
+}
+bool searchHashIndex(
+    string databaseName,
+    const Table& table,
+    int columnIndex,
+    string searchValue,
+    vector<int>& result
+){
+    string key = makeIndexKey(databaseName, table.name, columnIndex);
+    auto found = hashIndexes.find(key);
+    if(found == hashIndexes.end()){
+        return false;
+    }
+    result.clear();
+    found->second->search(searchValue, result);
+    return true;
+}
+void rebuildHashIndexes(string databaseName, Table& table){
+    for(int columnIndex : table.indexedColumns){
+        buildHashIndex(databaseName, table, columnIndex);
+    }
+}
