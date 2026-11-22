@@ -787,19 +787,23 @@ bool parseSearch(
     const vector<string>& tokens,
     string& tableName,
     string& columnName,
+    string& comparisonOperator,
     string& searchValue,
     string& errorMessage
 ){
     if(tokens.size() != 7 || tokens[0] != "SEARCH"){
-        errorMessage = "Invalid SEARCH command. Use SEARCH table_name BY column_name = value;";
+        errorMessage = "Invalid SEARCH command. Use SEARCH table_name BY/WHERE column_name operator value;";
         return false;
     }
-    if(tokens[2] != "BY"){
-        errorMessage = "Expected BY after table name.";
+    if(tokens[2] != "BY" && tokens[2] != "WHERE"){
+        errorMessage = "Expected BY or WHERE after table name.";
         return false;
     }
-    if(tokens[4] != "="){
-        errorMessage = "SEARCH currently supports only the '=' operator.";
+    if(tokens[4] != "=" && tokens[4] != "!=" &&
+       tokens[4] != "<>" && tokens[4] != ">" &&
+       tokens[4] != "<" && tokens[4] != ">=" &&
+       tokens[4] != "<="){
+        errorMessage = "Unsupported comparison operator. Use =, !=, <>, >, <, >= or <=.";
         return false;
     }
     if(tokens[6] != ";"){
@@ -808,9 +812,9 @@ bool parseSearch(
     }
     tableName = tokens[1];
     columnName = tokens[3];
+    comparisonOperator = tokens[4];
     searchValue = tokens[5];
-    if(searchValue.length() >= 2 &&
-       (searchValue[0] == '\'' || searchValue[0] == '"')){
+    if(searchValue.length() >= 2 && (searchValue[0] == '\'' || searchValue[0] == '"')){
         searchValue = searchValue.substr(1, searchValue.length() - 2);
     }
     return true;
