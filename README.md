@@ -1,12 +1,11 @@
 # 🦝 RaccoonDB
-
 ### A Mini SQL-Based Database Engine Built from Scratch in C++
 
-RaccoonDB is a lightweight command-line database engine developed entirely in C++. It is designed to understand how database systems work internally while implementing important Data Structures and Algorithms (DSA) concepts.
+RaccoonDB is a lightweight, SQL-like database engine developed entirely in C++.
 
-Unlike a typical CRUD management application, RaccoonDB focuses on building the internal components of a database engine, including tokenization, parsing, query execution, searching, sorting, and persistent storage.
+The project focuses on understanding how database engines work internally by implementing components such as tokenization, parsing, query execution, data storage, indexing, searching, and sorting.
 
-**What makes RaccoonDB different is its custom command system.** Alongside SQL-style commands, it introduces its own commands such as `SEARCH` and `SORT`, connecting database operations directly with searching and sorting algorithms.
+Unlike a typical CRUD management application, RaccoonDB is built as a small database engine. It includes custom commands and manually implemented Data Structures and Algorithms (DSA) that are integrated into actual database operations.
 
 ---
 
@@ -15,55 +14,60 @@ Unlike a typical CRUD management application, RaccoonDB focuses on building the 
 - Build a mini database engine from scratch using C++.
 - Understand how SQL commands are processed internally.
 - Implement a custom Tokenizer and Parser.
-- Create custom database commands using DSA.
-- Implement searching and sorting algorithms.
-- Manage databases, tables, columns, and records.
-- Build a basic persistent storage system using CSV files.
-- Develop a foundation for advanced indexing and query processing.
+- Develop database and table management operations.
+- Implement searching and sorting algorithms from scratch.
+- Integrate Hash Table and Binary Search Tree indexing.
+- Build a basic persistent storage system using C++ file handling.
+- Understand the relationship between DSA and database performance.
 
 ---
 
-## ⭐ What Makes RaccoonDB Special?
-
-RaccoonDB is not just an application that stores and displays records. It includes custom commands and internal implementations designed specifically for this project.
+## ⭐ Key Features
 
 ### 1. Custom SEARCH Command
 
-<badge color="success">Implemented</badge>
-
-RaccoonDB introduces its own `SEARCH` command to find records matching a particular column value.
+RaccoonDB provides its own `SEARCH` command to find records based on column conditions.
 
 **Syntax:**
 
 ```sql
-SEARCH table_name BY column_name = value;
+SEARCH table_name BY column_name operator value;
 ```
 
-**Example:**
+**Examples:**
 
 ```sql
-SEARCH students BY name = 'Ashish';
+SEARCH students BY age = 20;
+SEARCH students BY age > 20;
+SEARCH students BY age >= 18;
+SEARCH students BY age <= 25;
 ```
 
 **How it works:**
-- Identifies the requested table and column.
-- Uses Linear Search to examine records one by one.
-- Returns matching records.
 
-**DSA used:** Linear Search
+RaccoonDB selects a searching algorithm based on the available index:
 
-**Time Complexity:** O(n)
+| Condition | Searching method |
+|---|---|
+| Equality with Hash Table index | Hash Table |
+| Integer search with BST index | Binary Search Tree |
+| No suitable index | Linear Search |
+
+The implementation uses:
+
+- Hash Table for exact equality searches.
+- BST for integer range searches.
+- Linear Search as a fallback.
 
 ### 2. Custom SORT Command
 
-<badge color="success">Implemented</badge>
-
-RaccoonDB has a custom `SORT` command that sorts the actual records inside a table.
+RaccoonDB includes a custom `SORT` command that changes the actual row order of a table.
 
 **Syntax:**
 
 ```sql
 SORT table_name BY column_name ASC;
+SORT table_name BY column_name DESC;
 ```
 
 **Example:**
@@ -72,43 +76,32 @@ SORT table_name BY column_name ASC;
 SORT students BY age ASC;
 ```
 
-**How it works:**
-- Takes the selected table and column.
-- Sorts records using Merge Sort.
-- Changes the actual row order in the table.
+The command uses Merge Sort to rearrange the table's records.
 
-**Important difference:**
+**Difference between ORDER BY and SORT:**
 
 | ORDER BY | Custom SORT |
 |---|---|
-| Standard SQL-style query feature | Custom RaccoonDB command |
-| Sorts the displayed query result | Changes actual table row order |
-| Does not modify the original table order | Modifies the in-memory table order |
+| SQL-style query feature | Custom RaccoonDB command |
+| Sorts displayed query results | Changes actual table row order |
+| Does not change the original table order | Modifies the in-memory table order |
 | Uses Merge Sort | Uses Merge Sort |
 
-This distinction is one of the important design decisions in RaccoonDB.
-
-### 3. Custom Database Utility Commands
-
-<badge color="success">Implemented</badge>
-
-RaccoonDB also includes its own utility commands:
+### 3. Database Utility Commands
 
 | Command | Purpose |
 |---|---|
 | `HELP` | Displays supported commands |
 | `STATUS` | Displays database engine status |
 | `STATS` | Displays database statistics |
-| `SEARCH` | Searches records using Linear Search |
+| `SEARCH` | Searches records using available indexes or Linear Search |
 | `SORT` | Sorts actual table rows using Merge Sort |
-
-These commands make the terminal interface more useful and give RaccoonDB its own identity.
 
 ---
 
 ## ✨ Current Features — Version 1
 
-### SQL-Style Database Operations
+### Database and Table Management
 
 - `CREATE DATABASE`
 - `SHOW DATABASES`
@@ -118,6 +111,9 @@ These commands make the terminal interface more useful and give RaccoonDB its ow
 - `SHOW TABLES`
 - `DROP TABLE`
 - `DESCRIBE TABLE`
+
+### Data Operations
+
 - `INSERT INTO`
 - `SELECT`
 - `UPDATE`
@@ -127,77 +123,85 @@ These commands make the terminal interface more useful and give RaccoonDB its ow
 
 - Custom Tokenizer.
 - Custom Parser.
-- SQL command validation.
+- SQL-like command validation.
 - Column selection and `SELECT *`.
 - `WHERE` conditions.
+- Comparison operators: `=`, `!=`, `<>`, `>`, `<`, `>=`, `<=`.
 - `AND` and `OR` conditions.
 - Support for `INT`, `TEXT`, and `VARCHAR(n)`.
 
 ### Sorting and Searching
 
 - `ORDER BY` using Merge Sort.
-- Custom `SORT` command using Merge Sort.
-- Custom `SEARCH` command using Linear Search.
+- Custom `SORT` using Merge Sort.
+- Custom `SEARCH` command.
+- Linear Search fallback.
+- Hash Table indexing.
+- Binary Search Tree indexing for integer columns.
+- Equality and range-based indexed searching.
 
 ### Persistent Storage
 
 - CSV-based persistent storage.
-- Separate directories for databases.
-- Separate CSV files for tables.
+- Separate storage for databases and tables.
 - Database metadata storage.
 - Loading saved databases at startup.
-- Saving changes after successful database operations.
+- Saving database and table changes to disk.
 
 ---
 
 ## 🧠 Data Structures and Algorithms
 
-DSA is a core part of RaccoonDB. The objective is to use algorithms in actual database operations instead of implementing them only for demonstration.
+DSA is a core part of RaccoonDB. The goal is to implement algorithms from scratch and use them in actual database operations rather than keeping them as isolated demonstrations.
 
 ### Currently Implemented
 
-| Algorithm | Where It Is Used | Complexity |
+| Data Structure / Algorithm | Application | Complexity |
 |---|---|---|
-| Merge Sort | `ORDER BY` and custom `SORT` | O(n log n) |
-| Linear Search | Custom `SEARCH` | O(n) |
+| Merge Sort | `ORDER BY` and `SORT` | O(n log n) |
+| Linear Search | Fallback searching | O(n) |
+| Hash Table | Equality-based indexing | Average O(1) lookup |
+| Binary Search Tree (BST) | Integer range indexing | Average O(log n) search |
 
-**Merge Sort:** Used to arrange records according to a selected column. `ORDER BY` sorts query results, while custom `SORT` changes the actual order of table rows.
+**1. Merge Sort**
 
-**Linear Search:** Checks records one by one to find matching values in a selected column.
+Used to sort records based on a selected column. It powers both `ORDER BY` and the custom `SORT` command.
 
-### Planned DSA Implementations — Version 2
+**2. Linear Search**
 
-| Data Structure / Algorithm | Planned Application |
-|---|---|
-| Hash Table | Fast record lookup and column indexing |
-| Binary Search | Searching sorted data |
-| Binary Search Tree (BST) | Organizing indexed values |
-| AVL Tree | Maintaining balanced search indexes |
-| Heap / Priority Queue | Priority-based record processing |
-| Linked List | Exploring alternative record and index management |
-| Quick Sort | Additional sorting algorithm for comparison |
+Checks records one by one when no suitable index is available.
 
-These are future development goals, not currently implemented features.
+**3. Hash Table**
+
+Implemented using separate chaining to handle collisions. It stores keys and matching row indices and is used for equality-based searches.
+
+**4. Binary Search Tree**
+
+Stores integer column values and their corresponding row indices. Duplicate values are stored in the same node.
+
+It supports equality and range searches using operators such as `>`, `<`, `>=`, and `<=`.
+
+The current implementation is an ordinary, unbalanced BST. Its worst-case search complexity is O(n).
 
 ---
 
 ## 🏗️ How RaccoonDB Was Developed
 
-RaccoonDB was developed incrementally, with each component adding another layer to the database engine.
+RaccoonDB was developed incrementally, with each milestone adding another component to the database engine.
 
 ### Step 1 — Tokenizer
 
 The first component was the Tokenizer.
 
-It breaks an SQL command into smaller tokens that the program can understand.
+It breaks commands into smaller tokens that the program can understand.
 
-Input:
+Example:
 
 ```sql
 SELECT name FROM students;
 ```
 
-Output:
+Tokenized output:
 
 ```text
 [SELECT] [name] [FROM] [students] [;]
@@ -207,21 +211,17 @@ It recognizes keywords, identifiers, punctuation, comparison operators, and quot
 
 ### Step 2 — Parser
 
-The Parser was implemented after the Tokenizer.
+The Parser was developed after the Tokenizer.
 
-It checks whether the tokens follow the expected command structure and identifies invalid commands.
-
-For example, it recognizes the SELECT command, selected columns, and table name.
+It validates the structure of commands and detects invalid syntax before execution.
 
 ### Step 3 — Database and Table Management
 
 Classes were introduced to represent databases, tables, columns, and rows in memory.
 
-This established the internal data model of RaccoonDB.
-
 ### Step 4 — CREATE TABLE and Data Types
 
-Table creation was implemented with support for `INT`, `TEXT`, and `VARCHAR(n)`.
+Table creation and data type validation were implemented with support for `INT`, `TEXT`, and `VARCHAR(n)`.
 
 ### Step 5 — INSERT
 
@@ -229,35 +229,43 @@ INSERT was implemented with validation for column names, value counts, and data 
 
 ### Step 6 — SELECT and WHERE
 
-SELECT was developed to retrieve records, and WHERE conditions were introduced to filter records using `AND` and `OR`.
+SELECT was developed to retrieve records, followed by filtering using comparison operators and `AND` / `OR`.
 
 ### Step 7 — Merge Sort
 
-Merge Sort was implemented for sorting query results and table records.
-
-This introduced both standard-style `ORDER BY` and the custom `SORT` command.
+Merge Sort was integrated into `ORDER BY` and the custom `SORT` command.
 
 ### Step 8 — Linear Search
 
-A separate searching component was developed.
-
-The custom `SEARCH` command uses Linear Search to locate matching records.
+A separate searching implementation was developed and integrated into the custom `SEARCH` command.
 
 ### Step 9 — UPDATE and DELETE
 
 UPDATE modifies existing records, while DELETE removes records matching specified conditions.
 
-### Step 10 — Database Management and Utility Commands
+### Step 10 — Database Utility Commands
 
 Commands such as `SHOW DATABASES`, `USE`, `DROP DATABASE`, `SHOW TABLES`, and `DESCRIBE TABLE` were implemented.
 
-Custom utility commands `HELP`, `STATUS`, and `STATS` were also introduced.
+Custom commands `HELP`, `STATUS`, and `STATS` were also introduced.
 
 ### Step 11 — Persistent Storage
 
 A storage component was developed using C++ file handling and CSV files.
 
-Database metadata, table schemas, and records are saved to disk and loaded back into memory when RaccoonDB starts.
+Database metadata, table schemas, and records are saved to disk and loaded when RaccoonDB starts.
+
+### Step 12 — Hash Table Indexing
+
+A Hash Table was implemented from scratch using separate chaining.
+
+It was integrated into `SEARCH` to perform equality-based indexed searches.
+
+### Step 13 — Binary Search Tree Indexing
+
+A Binary Search Tree was implemented and integrated into RaccoonDB.
+
+It supports integer range searches and stores row indices for matching records.
 
 ---
 
@@ -282,6 +290,9 @@ RaccoonDB/
 ├── Search.h
 ├── Search.cpp
 │
+├── HashTable.cpp
+├── BST.cpp
+│
 ├── Storage.h
 ├── Storage.cpp
 │
@@ -294,7 +305,7 @@ RaccoonDB/
 └── README.md
 ```
 
-The `data` directory is generated by RaccoonDB and contains saved database information.
+The `data` directory is generated by RaccoonDB and stores database metadata and table records.
 
 ---
 
@@ -304,7 +315,7 @@ The `data` directory is generated by RaccoonDB and contains saved database infor
 
 - C++17-compatible compiler.
 - Terminal or command-line environment.
-- Compatible editline library for the `-ledit` linker option.
+- Editline library for the `-ledit` linker option.
 
 ### 1. Clone the Repository
 
@@ -312,7 +323,7 @@ The `data` directory is generated by RaccoonDB and contains saved database infor
 git clone https://github.com/ashishraj140744/RaccoonDB.git
 ```
 
-### 2. Open the Project
+### 2. Open the Project Directory
 
 ```bash
 cd RaccoonDB
@@ -321,7 +332,7 @@ cd RaccoonDB
 ### 3. Compile
 
 ```bash
-g++ -std=c++17 -Wall -Wextra main.cpp Tokenizer.cpp Parser.cpp Database.cpp MergeSort.cpp Search.cpp Storage.cpp -ledit -o raccoondb
+g++ -std=c++17 -Wall -Wextra main.cpp Tokenizer.cpp Parser.cpp Database.cpp MergeSort.cpp Search.cpp Storage.cpp HashTable.cpp BST.cpp -ledit -o raccoondb
 ```
 
 ### 4. Run
@@ -329,8 +340,6 @@ g++ -std=c++17 -Wall -Wextra main.cpp Tokenizer.cpp Parser.cpp Database.cpp Merg
 ```bash
 ./raccoondb
 ```
-
-If your system does not have the editline library, install the compatible library or adjust the linking command for your environment.
 
 ---
 
@@ -346,14 +355,15 @@ USE school;
 CREATE TABLE students (
     id INT,
     name VARCHAR(50),
-    age INT
+    age INT,
+    city TEXT
 );
 
-INSERT INTO students (id, name, age)
-VALUES (1, 'Ashish', 20);
+INSERT INTO students (id, name, age, city)
+VALUES (1, 'Ashish', 20, 'Shimla');
 
-INSERT INTO students (id, name, age)
-VALUES (2, 'Rahul', 21);
+INSERT INTO students (id, name, age, city)
+VALUES (2, 'Rahul', 21, 'Delhi');
 
 SELECT * FROM students;
 
@@ -364,7 +374,7 @@ WHERE age > 20;
 SELECT * FROM students
 ORDER BY age;
 
-SEARCH students BY name = 'Ashish';
+SEARCH students BY age > 20;
 
 SORT students BY age ASC;
 
@@ -380,71 +390,60 @@ SHOW TABLES;
 DESCRIBE TABLE students;
 ```
 
+### Creating Indexes
+
+**Hash Table index:**
+
+```sql
+CREATE INDEX students BY age;
+```
+
+**BST index:**
+
+```sql
+CREATE BST INDEX students BY age;
+```
+
+**Searching with indexes:**
+
+```sql
+SEARCH students BY age = 20;
+SEARCH students BY age > 20;
+SEARCH students BY age <= 25;
+```
+
 ---
 
-## 🔮 Version 2 — Future Development Goals
+## 🔮 Future Development — Version 2
 
-Version 2 will focus on improving database performance through indexing, advanced searching, and more efficient query processing.
+Version 2 will focus on improving the storage engine, indexing, and query execution.
 
-### 1. Hash Table-Based Indexing
+### Planned Improvements
 
-- Implement a Hash Table from scratch.
-- Create indexes for selected columns.
-- Handle hash collisions.
-- Improve lookup performance compared with scanning every row.
+- B-Tree indexing.
+- More advanced disk-based indexing.
+- Index persistence across database restarts.
+- Automatic index rebuilding after INSERT, UPDATE, and DELETE.
+- Page-based storage instead of basic CSV-only storage.
+- Buffer pool and memory management.
+- Improved storage and recovery mechanisms.
+- Better query execution and index selection.
 
-### 2. Tree-Based Indexing
-
-- Implement Binary Search Tree (BST).
-- Implement AVL Tree.
-- Maintain balanced search indexes.
-- Explore efficient record lookup and insertion.
-
-### 3. Advanced Searching
-
-- Binary Search on sorted data.
-- Indexed record lookup.
-- Compare Linear Search, Binary Search, and Hash Table lookup.
-
-### 4. Advanced Sorting
-
-- Implement Quick Sort.
-- Compare Quick Sort and Merge Sort.
-- Improve sorting for larger tables.
-
-### 5. Advanced Query Processing
-
-- `LIMIT`
-- Aggregate functions: `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`
-- `GROUP BY`
-- `HAVING`
-- Improved filtering and query execution.
-
-### 6. Improved Storage Engine
-
-- More efficient file organization.
-- Better storage and loading performance.
-- Improved validation and error handling.
-- Safer saving and recovery mechanisms.
-
-### 7. Additional Database Features
-
-- Primary key and uniqueness constraints.
-- `NOT NULL` and `DEFAULT`.
-- Improved data type support.
-- Advanced indexing and query optimization.
+These are future goals, not currently implemented features.
 
 ---
 
 ## ⚠️ Current Limitations
 
-RaccoonDB is an educational database engine, not a production database replacement.
+RaccoonDB is an educational database engine and is not intended to replace production database systems.
 
-- Uses CSV-based persistence rather than a binary page-based storage engine.
-- Currently uses Linear Search rather than indexed lookup.
-- Hash Table and tree-based indexing are planned for Version 2.
-- Advanced SQL features are not yet implemented.
-- Does not provide production-grade transaction recovery or crash safety.
+- Storage currently uses CSV files rather than a binary page-based storage engine.
+- Hash Table and BST indexes are maintained in memory.
+- Index persistence across restarts is not implemented.
+- Automatic index rebuilding after INSERT, UPDATE, and DELETE is deferred to a future version.
+- The BST is unbalanced and can degrade to O(n) in the worst case.
+- Advanced SQL features such as `GROUP BY`, `HAVING`, `LIMIT`, and aggregate functions are not part of the current Version 1 scope.
+- Production-grade transaction handling and crash recovery are not implemented.
 
 ---
 
@@ -452,10 +451,10 @@ RaccoonDB is an educational database engine, not a production database replaceme
 
 The purpose of RaccoonDB is to understand how database engines work internally and apply Data Structures and Algorithms to real database operations.
 
-Its custom commands, particularly `SEARCH` and `SORT`, demonstrate how algorithms can be integrated directly into a database engine.
+It combines C++ programming, database concepts, file handling, searching, sorting, hashing, and tree-based indexing into one project.
 
-**Version 1 establishes the core database engine. Version 2 aims to introduce advanced indexing, searching, sorting, and query-processing techniques.**
+**Version 1 establishes the core database engine. Future versions will focus on advanced indexing and a more efficient storage engine.**
 
 ---
 
-**Developed in C++ | Custom SQL-Based Database Engine | DSA-Focused Project**
+**Developed in C++ | Mini Database Engine | Data Structures and Algorithms | SQL-Like Query Processing**
