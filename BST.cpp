@@ -67,15 +67,3 @@ public:
         displayInOrder(root);
     }
 };
-int main() {
-    BinarySearchTree bst;
-    bst.insert(22, 0);
-    bst.insert(18, 1);
-    bst.insert(25, 2);
-    bst.insert(19, 3);
-    bst.insert(22, 4);
-    bst.insert(21, 5);
-    cout << "BST Inorder Traversal:\n";
-    bst.display();
-    return 0;
-}
