@@ -174,6 +174,24 @@ int main(){
             }
             continue;
         }
+        if(commandType == "CREATE" &&
+            tokens.size() > 1 &&
+            tokens[1] == "INDEX"){
+            if(tokens.size() != 6 ||
+                tokens[3] != "BY" ||
+                tokens[5] != ";"){
+                cout << "Parser error: Use CREATE INDEX table_name BY column_name;" << endl;
+                continue;
+            }
+            string errorMessage;
+            if(createIndex(db, tokens[2], tokens[4], errorMessage)){
+                cout << errorMessage << endl;
+            }
+            else{
+                cout << "Error: " << errorMessage << endl;
+            }
+            continue;
+        }
         if(commandType == "SHOW" &&
             tokens.size() > 1 &&
             tokens[1] == "DATABASES"){
@@ -386,6 +404,7 @@ int main(){
             cout << "UPDATE table_name SET column = value WHERE condition;\n";
             cout << "DELETE FROM table_name WHERE condition;\n";
             cout << "\nSEARCH AND SORT COMMANDS:\n";
+            cout << "CREATE INDEX table_name BY column_name;\n";
             cout << "SEARCH table_name BY column = value;\n";
             cout << "SORT table_name BY column ASC;\n";
             cout << "SORT table_name BY column DESC;\n";

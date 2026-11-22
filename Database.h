@@ -19,7 +19,7 @@ public:
     string name;
     vector<Column> columns;
     vector<Row> rows;
-    vector<HashTable> indexes;
+    vector<int> indexedColumns;
 };
 class Database{
 public:
@@ -107,6 +107,21 @@ vector<int> linearSearch(
     int columnIndex,
     string searchValue
 );
+bool createIndex(
+    Database& db,
+    string tableName,
+    string columnName,
+    string& errorMessage
+);
+void buildHashIndex(string databaseName, Table& table, int columnIndex);
+bool searchHashIndex(
+    string databaseName,
+    const Table& table,
+    int columnIndex,
+    string searchValue,
+    vector<int>& result
+);
+void rebuildHashIndexes(string databaseName, Table& table);
 bool executeSearch(
     Database& db,
     string tableName,
@@ -114,32 +129,4 @@ bool executeSearch(
     string searchValue,
     string& errorMessage
 );
-class HashTable{
-private:
-    class Node{
-    public:
-        string key;
-        vector<int> rowIndices;
-        Node* next;
-        Node(string k, int rowIndex){
-            key = k;
-            rowIndices.push_back(rowIndex);
-            next = nullptr;
-        }
-    };
-    static const int SIZE = 10;
-    Node* table[SIZE];
-    int hashFunction(string key);
-    void copyFrom(const HashTable& other);
-public:
-    HashTable();
-    HashTable(const HashTable& other);
-    HashTable& operator=(const HashTable& other);
-    void insert(string key, int rowIndex);
-    bool search(string key, vector<int>& result);
-    void remove(string key, int rowIndex);
-    void display();
-    void clear();
-    ~HashTable();
-};
 #endif
