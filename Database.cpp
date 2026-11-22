@@ -948,6 +948,48 @@ bool createIndex(
                    table->columns[columnIndex].name + "'.";
     return true;
 }
+bool createBSTIndex(
+    Database& db,
+    string tableName,
+    string columnName,
+    string& errorMessage
+){
+    Table* table = findTable(db, tableName);
+    if(table == nullptr){
+        errorMessage = "Table '" + tableName + "' does not exist.";
+        return false;
+    }
+    int columnIndex = -1;
+    for(int i = 0; i < table->columns.size(); i++){
+        if(toUpperCase(table->columns[i].name) ==
+           toUpperCase(columnName)){
+            columnIndex = i;
+            break;
+        }
+    }
+    if(columnIndex == -1){
+        errorMessage = "Column '" + columnName + "' does not exist.";
+        return false;
+    }
+    if(toUpperCase(table->columns[columnIndex].type) != "INT"){
+        errorMessage = "BST index currently supports only INT columns.";
+        return false;
+    }
+    for(int existingIndex : table->bstIndexedColumns){
+        if(existingIndex == columnIndex){
+            errorMessage = "BST index already exists on this column.";
+            return false;
+        }
+    }
+    table->bstIndexedColumns.push_back(columnIndex);
+    buildBSTIndex(
+        db.name,
+        *table,
+        columnIndex
+    );
+    errorMessage = "BST index created on column '" + table->columns[columnIndex].name + "'.";
+    return true;
+}
 bool executeSearch(
     Database& db,
     string tableName,
@@ -985,6 +1027,7 @@ bool executeSearch(
     }
     vector<int> matchingRows;
     bool usedHashIndex = false;
+    bool usedBSTIndex = false;
     if(comparisonOperator == "="){
         for(int indexedColumn : table->indexedColumns){
             if(indexedColumn == columnIndex){
@@ -999,8 +1042,27 @@ bool executeSearch(
             }
         }
     }
+    if(!usedHashIndex && numeric){
+        for(int indexedColumn : table->bstIndexedColumns){
+            if(indexedColumn == columnIndex){
+                usedBSTIndex = searchBSTIndex(
+                    db.name,
+                    *table,
+                    columnIndex,
+                    stoi(searchValue),
+                    comparisonOperator,
+                    matchingRows
+                );
+
+                break;
+            }
+        }
+    }
     if(usedHashIndex){
         cout << "Search method: Hash Table Index" << endl;
+    }
+    else if(usedBSTIndex){
+        cout << "Search method: BST Index" << endl;
     }
     else{
         matchingRows = linearSearchCondition(

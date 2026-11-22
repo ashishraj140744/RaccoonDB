@@ -176,6 +176,31 @@ int main(){
         }
         if(commandType == "CREATE" &&
             tokens.size() > 1 &&
+            tokens[1] == "BST"){
+                if(tokens.size() != 7 ||
+                tokens[2] != "INDEX" ||
+                tokens[4] != "BY" ||
+                tokens[6] != ";"){
+                    cout << "Parser error: Use CREATE BST INDEX table_name BY column_name;" << endl;
+                    continue;
+                }
+                string errorMessage;
+                if(createBSTIndex(
+                    db,
+                    tokens[3],
+                    tokens[5],
+                    errorMessage
+                )){
+                    cout << errorMessage << endl;
+                }
+                else{
+                    cout << "Error: " << errorMessage << endl;
+                }
+
+                continue;
+            }
+        if(commandType == "CREATE" &&
+            tokens.size() > 1 &&
             tokens[1] == "INDEX"){
             if(tokens.size() != 6 ||
                 tokens[3] != "BY" ||

@@ -20,6 +20,7 @@ public:
     vector<Column> columns;
     vector<Row> rows;
     vector<int> indexedColumns;
+    vector<int> bstIndexedColumns;
 };
 class Database{
 public:
@@ -136,5 +137,24 @@ bool executeSearch(
     string comparisonOperator,
     string searchValue,
     string& errorMessage
+);
+bool createBSTIndex(
+    Database& db,
+    string tableName,
+    string columnName,
+    string& errorMessage
+);
+void buildBSTIndex(
+    string databaseName,
+    Table& table,
+    int columnIndex
+);
+bool searchBSTIndex(
+    string databaseName,
+    const Table& table,
+    int columnIndex,
+    int searchValue,
+    string comparisonOperator,
+    vector<int>& results
 );
 #endif
