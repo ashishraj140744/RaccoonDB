@@ -107,6 +107,13 @@ vector<int> linearSearch(
     int columnIndex,
     string searchValue
 );
+vector<int> linearSearchCondition(
+    const Table& table,
+    int columnIndex,
+    string searchValue,
+    string comparisonOperator,
+    bool numeric
+);
 bool createIndex(
     Database& db,
     string tableName,
@@ -126,6 +133,7 @@ bool executeSearch(
     Database& db,
     string tableName,
     string columnName,
+    string comparisonOperator,
     string searchValue,
     string& errorMessage
 );

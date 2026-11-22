@@ -948,11 +948,11 @@ bool createIndex(
                    table->columns[columnIndex].name + "'.";
     return true;
 }
-
 bool executeSearch(
     Database& db,
     string tableName,
     string columnName,
+    string comparisonOperator,
     string searchValue,
     string& errorMessage
 ){
@@ -963,7 +963,8 @@ bool executeSearch(
     }
     int columnIndex = -1;
     for(int i = 0; i < table->columns.size(); i++){
-        if(toUpperCase(table->columns[i].name) == toUpperCase(columnName)){
+        if(toUpperCase(table->columns[i].name) ==
+           toUpperCase(columnName)){
             columnIndex = i;
             break;
         }
@@ -972,32 +973,44 @@ bool executeSearch(
         errorMessage = "Column '" + columnName + "' does not exist.";
         return false;
     }
+    string columnType = toUpperCase(table->columns[columnIndex].type);
+    bool numeric = (columnType == "INT");
+    string validationValue = searchValue;
+    if(!numeric){
+        validationValue = "'" + searchValue + "'";
+    }
+    if(!validateValue(validationValue, columnType, errorMessage)){
+        errorMessage = "Invalid search value: " + errorMessage;
+        return false;
+    }
     vector<int> matchingRows;
     bool usedHashIndex = false;
-
-    for(int indexedColumn : table->indexedColumns){
-        if(indexedColumn == columnIndex){
-            usedHashIndex = searchHashIndex(
-                db.name,
-                *table,
-                columnIndex,
-                searchValue,
-                matchingRows
-            );
-            break;
+    if(comparisonOperator == "="){
+        for(int indexedColumn : table->indexedColumns){
+            if(indexedColumn == columnIndex){
+                usedHashIndex = searchHashIndex(
+                    db.name,
+                    *table,
+                    columnIndex,
+                    searchValue,
+                    matchingRows
+                );
+                break;
+            }
         }
     }
-
-    if(!usedHashIndex){
-        matchingRows = linearSearch(
-            *table,
-            columnIndex,
-            searchValue
-        );
-        cout << "Search method: Linear Search" << endl;
+    if(usedHashIndex){
+        cout << "Search method: Hash Table Index" << endl;
     }
     else{
-        cout << "Search method: Hash Table Index" << endl;
+        matchingRows = linearSearchCondition(
+            *table,
+            columnIndex,
+            searchValue,
+            comparisonOperator,
+            numeric
+        );
+        cout << "Search method: Linear Search" << endl;
     }
     if(matchingRows.empty()){
         cout << "No matching records found." << endl;
@@ -1008,8 +1021,7 @@ bool executeSearch(
         cout << table->columns[i].name << "\t";
     }
     cout << endl;
-    for(int i = 0; i < matchingRows.size(); i++){
-        int rowIndex = matchingRows[i];
+    for(int rowIndex : matchingRows){
         for(int j = 0; j < table->columns.size(); j++){
             cout << table->rows[rowIndex].values[j] << "\t";
         }

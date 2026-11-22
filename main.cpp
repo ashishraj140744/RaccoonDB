@@ -363,12 +363,14 @@ int main(){
         if(commandType == "SEARCH"){
             string tableName;
             string columnName;
+            string comparisonOperator;
             string searchValue;
             string errorMessage;
             if(!parseSearch(
                 tokens,
                 tableName,
                 columnName,
+                comparisonOperator,
                 searchValue,
                 errorMessage
             )){
@@ -379,6 +381,7 @@ int main(){
                 db,
                 tableName,
                 columnName,
+                comparisonOperator,
                 searchValue,
                 errorMessage
             )){
@@ -406,6 +409,8 @@ int main(){
             cout << "\nSEARCH AND SORT COMMANDS:\n";
             cout << "CREATE INDEX table_name BY column_name;\n";
             cout << "SEARCH table_name BY column = value;\n";
+            cout << "SEARCH table_name BY column operator value;\n";
+            cout << "SEARCH table_name WHERE column operator value;\n";
             cout << "SORT table_name BY column ASC;\n";
             cout << "SORT table_name BY column DESC;\n";
             cout << "SELECT * FROM table_name ORDER BY column ASC;\n";
