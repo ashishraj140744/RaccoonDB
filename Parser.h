@@ -36,7 +36,7 @@ bool parseInsert(
     const vector<string>& tokens,
     string& tableName,
     vector<string>& columnNames,
-    vector<string>& values,
+    vector<vector<string>>& rows,
     string& errorMessage
 );
 bool parseUpdate(

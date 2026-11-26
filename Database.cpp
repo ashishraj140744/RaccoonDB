@@ -434,7 +434,7 @@ bool executeInsert(
     Database& db,
     string tableName,
     const vector<string>& columnNames,
-    const vector<string>& values,
+    const vector<vector<string>>& rows,
     string& errorMessage
 ){
     Table* table = findTable(db, tableName);
@@ -442,72 +442,91 @@ bool executeInsert(
         errorMessage = "Table '" + tableName + "' does not exist.";
         return false;
     }
-    if(values.empty()){
+    if(rows.empty()){
         errorMessage = "INSERT requires values.";
         return false;
     }
-    if(columnNames.size() != values.size() && !columnNames.empty()){
-        errorMessage = "Number of columns and values does not match.";
-        return false;
-    }
-    if(columnNames.empty() && values.size() != table->columns.size()){
-        errorMessage = "Number of values must match the table's column count.";
-        return false;
-    }
-    vector<string> newValues(table->columns.size());
-    vector<bool> assigned(table->columns.size(), false);
-    for(int i = 0; i < values.size(); i++){
-        int columnIndex = -1;
-        if(columnNames.empty()){
-            columnIndex = i;
+    vector<Row> newRows;
+    for(const vector<string>& values : rows){
+        if(values.empty()){
+            errorMessage = "INSERT requires values.";
+            return false;
         }
-        else{
-            for(int j = 0; j < table->columns.size(); j++){
-                if(toUpper(table->columns[j].name) ==
-                   toUpper(columnNames[i])){
-                    columnIndex = j;
-                    break;
+        if(columnNames.size() != values.size() && !columnNames.empty()){
+            errorMessage = "Number of columns and values does not match.";
+            return false;
+        }
+        if(columnNames.empty() && values.size() != table->columns.size()){
+            errorMessage = "Number of values must match the table's column count.";
+            return false;
+        }
+        vector<string> newValues(table->columns.size());
+        vector<bool> assigned(table->columns.size(), false);
+        for(int i = 0; i < values.size(); i++){
+            int columnIndex = -1;
+            if(columnNames.empty()){
+                columnIndex = i;
+            }
+            else{
+                for(int j = 0; j < table->columns.size(); j++){
+                    if(toUpper(table->columns[j].name) ==
+                       toUpper(columnNames[i])){
+                        columnIndex = j;
+                        break;
+                    }
                 }
             }
+            if(columnIndex == -1){
+                errorMessage = "Column '" + columnNames[i] + "' does not exist.";
+                return false;
+            }
+            if(assigned[columnIndex]){
+                errorMessage = "Duplicate column: " +
+                               table->columns[columnIndex].name;
+                return false;
+            }
+            if(!validateValue(
+                values[i],
+                table->columns[columnIndex].type,
+                errorMessage
+            )){
+                errorMessage = "Column '" +
+                               table->columns[columnIndex].name +
+                               "': " + errorMessage;
+                return false;
+            }
+            string storedValue = values[i];
+            if(isQuotedString(storedValue)){
+                storedValue = storedValue.substr(
+                    1,
+                    storedValue.length() - 2
+                );
+            }
+            newValues[columnIndex] = storedValue;
+            assigned[columnIndex] = true;
         }
-        if(columnIndex == -1){
-            errorMessage = "Column '" + columnNames[i] + "' does not exist.";
-            return false;
+        for(int i = 0; i < assigned.size(); i++){
+            if(!assigned[i]){
+                errorMessage = "Missing value for column '" +
+                               table->columns[i].name + "'.";
+                return false;
+            }
         }
-        if(assigned[columnIndex]){
-            errorMessage = "Duplicate column: " +
-                           table->columns[columnIndex].name;
-            return false;
-        }
-        if(!validateValue(
-            values[i],
-            table->columns[columnIndex].type,
-            errorMessage
-        )){
-            errorMessage = "Column '" + table->columns[columnIndex].name + "': " + errorMessage;
-            return false;
-        }
-        string storedValue = values[i];
-        if(isQuotedString(storedValue)){
-            storedValue = storedValue.substr(
-                1,
-                storedValue.length() - 2
-            );
-        }
-        newValues[columnIndex] = storedValue;
-        assigned[columnIndex] = true;
+        Row newRow;
+        newRow.values = newValues;
+        newRows.push_back(newRow);
     }
-    for(int i = 0; i < assigned.size(); i++){
-        if(!assigned[i]){
-            errorMessage = "Missing value for column '" + table->columns[i].name + "'.";
-            return false;
-        }
+    for(const Row& row : newRows){
+        table->rows.push_back(row);
     }
-    Row newRow;
-    newRow.values = newValues;
-    table->rows.push_back(newRow);
-    errorMessage = "1 row inserted successfully.";
     rebuildHashIndexes(db.name, *table);
+    if(newRows.size() == 1){
+        errorMessage = "1 row inserted successfully.";
+    }
+    else{
+        errorMessage = to_string(newRows.size()) +
+                       " rows inserted successfully.";
+    }
     return true;
 }
 bool executeUpdate(

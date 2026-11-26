@@ -63,7 +63,7 @@ bool executeInsert(
     Database& db,
     string tableName,
     const vector<string>& columnNames,
-    const vector<string>& values,
+    const vector<vector<string>>& rows,
     string& errorMessage
 );
 bool executeUpdate(

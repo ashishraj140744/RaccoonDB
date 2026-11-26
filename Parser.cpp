@@ -279,12 +279,12 @@ bool parseInsert(
     const vector<string>& tokens,
     string& tableName,
     vector<string>& columnNames,
-    vector<string>& values,
+    vector<vector<string>>& rows,
     string& errorMessage
 ){
     tableName.clear();
     columnNames.clear();
-    values.clear();
+    rows.clear();
     if(tokens.size() < 6 || toUpperCase(tokens[0]) != "INSERT"){
         errorMessage = "Invalid INSERT command.";
         return false;
@@ -298,7 +298,7 @@ bool parseInsert(
     if(i < tokens.size() && tokens[i] == "("){
         i++;
         while(i < tokens.size() && tokens[i] != ")"){
-            if(tokens[i] == "," || tokens[i] == ";"){
+            if(tokens[i] == "," || tokens[i] == ";" || tokens[i] == "("){
                 errorMessage = "Invalid column name.";
                 return false;
             }
@@ -306,6 +306,7 @@ bool parseInsert(
             i++;
             if(i < tokens.size() && tokens[i] == ","){
                 i++;
+
                 if(i >= tokens.size() || tokens[i] == ")"){
                     errorMessage = "Expected column name after comma.";
                     return false;
@@ -320,6 +321,10 @@ bool parseInsert(
             errorMessage = "Expected ')' after column names.";
             return false;
         }
+        if(columnNames.empty()){
+            errorMessage = "Column list cannot be empty.";
+            return false;
+        }
         i++;
     }
     if(i >= tokens.size() || toUpperCase(tokens[i]) != "VALUES"){
@@ -327,48 +332,59 @@ bool parseInsert(
         return false;
     }
     i++;
-    if(i >= tokens.size() || tokens[i] != "("){
-        errorMessage = "Expected '(' after VALUES.";
-        return false;
-    }
-    i++;
-    while(i < tokens.size() && tokens[i] != ")"){
-        if(tokens[i] == "," || tokens[i] == ";" || tokens[i] == "("){
-            errorMessage = "Expected a value.";
+    while(true){
+        if(i >= tokens.size() || tokens[i] != "("){
+            errorMessage = "Expected '(' before row values.";
             return false;
         }
-        values.push_back(tokens[i]);
         i++;
-        if(i < tokens.size() && tokens[i] == ","){
+        vector<string> values;
+        while(i < tokens.size() && tokens[i] != ")"){
+            if(tokens[i] == "," || tokens[i] == ";" || tokens[i] == "("){
+                errorMessage = "Expected a value.";
+                return false;
+            }
+            values.push_back(tokens[i]);
             i++;
-            if(i >= tokens.size() || tokens[i] == ")"){
-                errorMessage = "Expected value after comma.";
+            if(i < tokens.size() && tokens[i] == ","){
+                i++;
+
+                if(i >= tokens.size() || tokens[i] == ")"){
+                    errorMessage = "Expected value after comma.";
+                    return false;
+                }
+            }
+            else if(i < tokens.size() && tokens[i] != ")"){
+                errorMessage = "Expected ',' or ')' after value.";
                 return false;
             }
         }
-        else if(i < tokens.size() && tokens[i] != ")"){
-            errorMessage = "Expected ',' or ')' after value.";
+        if(values.empty()){
+            errorMessage = "INSERT must contain at least one value.";
             return false;
         }
+        if(i >= tokens.size() || tokens[i] != ")"){
+            errorMessage = "Expected ')' after values.";
+            return false;
+        }
+        i++;
+        if(!columnNames.empty() && columnNames.size() != values.size()){
+            errorMessage = "Number of columns and values does not match.";
+            return false;
+        }
+        rows.push_back(values);
+        if(i < tokens.size() && tokens[i] == ","){
+            i++;
+        }
+        else{
+            break;
+        }
     }
-    if(values.empty()){
-        errorMessage = "INSERT must contain at least one value.";
-        return false;
-    }
-    if(i >= tokens.size() || tokens[i] != ")"){
-        errorMessage = "Expected ')' after values.";
-        return false;
-    }
-    i++;
     if(i < tokens.size() && tokens[i] == ";"){
         i++;
     }
     if(i != tokens.size()){
         errorMessage = "Unexpected tokens after INSERT.";
-        return false;
-    }
-    if(!columnNames.empty() && columnNames.size() != values.size()){
-        errorMessage = "Number of columns and values does not match.";
         return false;
     }
     errorMessage = "INSERT command structure is valid.";

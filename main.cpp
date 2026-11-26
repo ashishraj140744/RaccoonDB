@@ -532,16 +532,15 @@ int main(){
         if(commandType == "INSERT"){
             string tableName;
             vector<string> columnNames;
-            vector<string> values;
+            vector<vector<string>> rows;
             string errorMessage;
             if(!parseInsert(
                 tokens,
                 tableName,
                 columnNames,
-                values,
+                rows,
                 errorMessage
             )){
-                saveChanges();
                 cout << "Parser error: " << errorMessage << endl;
                 continue;
             }
@@ -549,7 +548,7 @@ int main(){
                 db,
                 tableName,
                 columnNames,
-                values,
+                rows,
                 errorMessage
             )){
                 saveChanges();
